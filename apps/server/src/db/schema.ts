@@ -164,3 +164,25 @@ export const adminActions = pgTable("admin_actions", {
   reason: text("reason"),
   createdAt: createdAt(),
 });
+
+/** Individual addresses an admin let in even though their domain isn't allowlisted. */
+export const approvedEmails = pgTable("approved_emails", {
+  emailCanonical: text("email_canonical").primaryKey(),
+  universityId: uuid("university_id")
+    .notNull()
+    .references(() => universities.id, { onDelete: "cascade" }),
+  note: text("note"),
+  addedBy: uuid("added_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: createdAt(),
+});
+
+/** Phase 0 demand survey: which modes people want and when they're free (as UTC hours). */
+export const surveyResponses = pgTable("survey_responses", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  modes: text("modes").array().notNull().default(sql`'{}'::text[]`),
+  freeHoursUtc: smallint("free_hours_utc").array().notNull().default(sql`'{}'::smallint[]`),
+  timezone: text("timezone"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

@@ -8,6 +8,7 @@ import {
   MAX_LANGUAGES,
   OTP_LENGTH,
   SOCIAL_PLATFORMS,
+  SURVEY_MODE_IDS,
 } from "./constants";
 
 const LINK_LIKE = /(https?:\/\/|www\.|\.com\b|@)/i;
@@ -110,7 +111,8 @@ export const adminSuspendSchema = z.object({
 
 export const adminBanSchema = z.object({ reason: z.string().trim().min(3).max(300) });
 
-export const adminApproveDomainSchema = z.union([
+/** Where an approved domain or email should point: an existing university or a new one. */
+export const universityTargetSchema = z.union([
   z.object({ universityId: z.uuid() }),
   z.object({
     newUniversity: z.object({
@@ -119,11 +121,52 @@ export const adminApproveDomainSchema = z.union([
         .string()
         .trim()
         .toUpperCase()
-        .regex(/^[A-Z]{2}$/),
+        .regex(/^[A-Z]{2}$/, "Use a 2-letter country code, like NG"),
       country: z.string().trim().min(2).max(60),
     }),
   }),
 ]);
+export type UniversityTarget = z.infer<typeof universityTargetSchema>;
+
+/** @deprecated use universityTargetSchema */
+export const adminApproveDomainSchema = universityTargetSchema;
+
+const DOMAIN_RE = /^(?=.{4,253}$)([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$/;
+
+export const domainSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .transform((v) =>
+    v
+      .replace(/^@/, "")
+      .replace(/^www\./, "")
+      .replace(/\.$/, ""),
+  )
+  .pipe(z.string().regex(DOMAIN_RE, "Enter a domain like uni.edu"));
+
+export const adminAddDomainSchema = z.object({ domain: domainSchema }).and(universityTargetSchema);
+
+export const adminAddEmailSchema = z
+  .object({
+    email: emailSchema,
+    note: z.string().trim().max(300).optional(),
+    notify: z.boolean().default(true),
+  })
+  .and(universityTargetSchema);
+
+export const surveySchema = z.object({
+  modes: z
+    .array(z.enum(SURVEY_MODE_IDS))
+    .max(SURVEY_MODE_IDS.length)
+    .transform((v) => [...new Set(v)]),
+  freeHoursUtc: z
+    .array(z.number().int().min(0).max(23))
+    .max(24)
+    .transform((v) => [...new Set(v)].sort((a, b) => a - b)),
+  timezone: z.string().trim().max(64).optional(),
+});
+export type SurveyInput = z.infer<typeof surveySchema>;
 
 export const adminRejectDomainSchema = z.object({ note: z.string().trim().min(3).max(300) });
 

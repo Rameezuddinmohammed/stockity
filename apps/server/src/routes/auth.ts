@@ -1,4 +1,5 @@
 import {
+  FREE_EMAIL_PROVIDERS,
   type Me,
   OTP_RESEND_SECONDS,
   OTP_TTL_MINUTES,
@@ -18,9 +19,10 @@ import { canonicalEmail, isAlumniDomain, isDisposableDomain, splitEmail } from "
 import { AppError, parse } from "../lib/errors";
 import { otpMail } from "../lib/mailer";
 import { cooldown, enforce } from "../lib/rate-limit";
-import { findUniversityForDomain, loadMe } from "../lib/users";
+import { loadMe, resolveUniversity } from "../lib/users";
 
 const MAX_OTP_ATTEMPTS = 5;
+const FREE_PROVIDERS = new Set<string>(FREE_EMAIL_PROVIDERS);
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const blockedHash = (ctx: Ctx, canonical: string) =>
@@ -62,11 +64,17 @@ export function authRoutes(app: FastifyInstance, ctx: Ctx) {
     }
     await assertEmailAllowed(ctx, canonical);
 
-    const university = await findUniversityForDomain(ctx.db, domain);
+    const university = await resolveUniversity(ctx.db, canonical);
     if (!university) {
-      throw new AppError(404, "UNKNOWN_DOMAIN", "We don't know this university email yet.", {
-        domain,
-      });
+      const personal = FREE_PROVIDERS.has(domain);
+      throw new AppError(
+        404,
+        "UNKNOWN_DOMAIN",
+        personal
+          ? "That's a personal email. Use the email your university gave you."
+          : "We don't know this university email yet.",
+        { domain, personal },
+      );
     }
 
     // Stops one university's inbox from being flooded by a script.
@@ -152,7 +160,7 @@ export function authRoutes(app: FastifyInstance, ctx: Ctx) {
         .where(eq(users.id, user.id))
         .returning();
     } else {
-      const university = await findUniversityForDomain(ctx.db, splitEmail(canonical).domain);
+      const university = await resolveUniversity(ctx.db, canonical);
       if (!university) {
         throw new AppError(404, "UNKNOWN_DOMAIN", "We don't know this university email yet.");
       }

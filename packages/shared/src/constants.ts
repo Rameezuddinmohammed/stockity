@@ -100,6 +100,47 @@ export const LANGUAGE_CODES = LANGUAGES.map((l) => l.code) as unknown as readonl
 ];
 export const MAX_LANGUAGES = 5;
 
+/** Big free email providers: never allowlisted as a whole domain. */
+export const FREE_EMAIL_PROVIDERS = [
+  "gmail.com",
+  "googlemail.com",
+  "outlook.com",
+  "hotmail.com",
+  "live.com",
+  "msn.com",
+  "yahoo.com",
+  "ymail.com",
+  "icloud.com",
+  "me.com",
+  "mac.com",
+  "aol.com",
+  "proton.me",
+  "protonmail.com",
+  "gmx.com",
+  "gmx.de",
+  "mail.com",
+  "yandex.com",
+  "yandex.ru",
+  "zoho.com",
+  "qq.com",
+  "163.com",
+  "126.com",
+  "naver.com",
+  "rediffmail.com",
+] as const;
+
+export const SURVEY_MODES = [
+  { id: "chat", label: "Just Chat" },
+  { id: "play", label: "Quick Play" },
+  { id: "tables", label: "Tables" },
+  { id: "cinema", label: "Cinema" },
+] as const;
+export type SurveyMode = (typeof SURVEY_MODES)[number]["id"];
+export const SURVEY_MODE_IDS = SURVEY_MODES.map((m) => m.id) as unknown as readonly [
+  SurveyMode,
+  ...SurveyMode[],
+];
+
 /** Machine-readable error codes returned by the API as `{ error: { code, message } }`. */
 export const ERROR_CODES = [
   "VALIDATION",

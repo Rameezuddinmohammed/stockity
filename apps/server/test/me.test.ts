@@ -137,3 +137,31 @@ describe("stats", () => {
     expect(res.json()).toEqual({ students: 2, universities: 2, countries: 2 });
   });
 });
+
+describe("survey", () => {
+  it("saves and replaces answers", async () => {
+    const cookie = await h.signUp("riya@iitb.ac.in");
+    expect((await h.get("/api/me/survey", cookie)).json()).toEqual({ answers: null });
+    await h.put(
+      "/api/me/survey",
+      { modes: ["chat"], freeHoursUtc: [15, 14, 14], timezone: "Asia/Kolkata" },
+      cookie,
+    );
+    await h.put(
+      "/api/me/survey",
+      { modes: ["tables", "cinema"], freeHoursUtc: [20, 3], timezone: "Asia/Kolkata" },
+      cookie,
+    );
+    expect((await h.get("/api/me/survey", cookie)).json().answers).toEqual({
+      modes: ["tables", "cinema"],
+      freeHoursUtc: [3, 20],
+      timezone: "Asia/Kolkata",
+    });
+  });
+
+  it("rejects hours outside 0-23", async () => {
+    const cookie = await h.signUp("riya@iitb.ac.in");
+    const res = await h.put("/api/me/survey", { modes: [], freeHoursUtc: [24] }, cookie);
+    expect(res.statusCode).toBe(400);
+  });
+});

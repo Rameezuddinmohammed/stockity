@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { ageOn, isRealDate } from "./age";
-import { displayNameSchema, emailSchema, profileUpdateSchema, socialsSchema } from "./schemas";
+import {
+  displayNameSchema,
+  domainSchema,
+  emailSchema,
+  profileUpdateSchema,
+  socialsSchema,
+} from "./schemas";
 
 describe("ageOn", () => {
   const now = new Date("2026-09-25T12:00:00Z");
@@ -55,5 +61,14 @@ describe("schemas", () => {
         ],
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("domainSchema", () => {
+  it("normalizes and validates domains", () => {
+    expect(domainSchema.parse(" @WWW.UniLag.edu.ng. ")).toBe("unilag.edu.ng");
+    expect(domainSchema.safeParse("not a domain").success).toBe(false);
+    expect(domainSchema.safeParse("-bad.edu").success).toBe(false);
+    expect(domainSchema.safeParse("edu").success).toBe(false);
   });
 });

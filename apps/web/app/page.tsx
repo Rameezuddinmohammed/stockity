@@ -166,8 +166,10 @@ export default function Landing() {
 
       <footer className="mt-16 flex flex-wrap justify-between gap-3 border-t-2 border-line pt-5 text-sm text-muted">
         <Logo size={26} />
-        <nav className="flex gap-5">
-          <Link href="/guidelines">Community guidelines</Link>
+        <nav className="flex flex-wrap gap-5">
+          <Link href="/guidelines">Guidelines</Link>
+          <Link href="/terms">Terms</Link>
+          <Link href="/privacy">Privacy</Link>
           <Link href="/join">Sign in</Link>
         </nav>
       </footer>

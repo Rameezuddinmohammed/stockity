@@ -38,7 +38,7 @@ export async function createHarness() {
     },
     async reset() {
       await client.unsafe(
-        "TRUNCATE admin_actions, domain_requests, blocked_emails, sessions, otp_codes, socials, profiles, users, university_domains, universities CASCADE",
+        "TRUNCATE survey_responses, approved_emails, admin_actions, domain_requests, blocked_emails, sessions, otp_codes, socials, profiles, users, university_domains, universities CASCADE",
       );
       await redis.flushdb();
       await seedUniversities(db, fixture);
@@ -72,6 +72,13 @@ export async function createHarness() {
         url,
         headers: { origin: ORIGIN, ...(cookie ? { cookie } : {}) },
         payload: body as object,
+      });
+    },
+    del(url: string, cookie?: string) {
+      return app.inject({
+        method: "DELETE",
+        url,
+        headers: { origin: ORIGIN, ...(cookie ? { cookie } : {}) },
       });
     },
     get(url: string, cookie?: string) {

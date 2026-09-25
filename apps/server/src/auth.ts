@@ -23,7 +23,8 @@ function cookieOptions(ctx: Ctx, expires: Date) {
     path: "/",
     httpOnly: true,
     sameSite: "lax" as const,
-    secure: ctx.config.NODE_ENV === "production",
+    // Secure whenever the site is served over HTTPS (lets a server be tested by IP before DNS).
+    secure: ctx.config.APP_ORIGIN.startsWith("https://"),
     expires,
   };
 }

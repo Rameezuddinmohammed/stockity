@@ -4,6 +4,7 @@ import type { PublicStats } from "@quad/shared";
 import { Button, buttonClass, flag, Tile } from "@quad/ui";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { SurveyCard } from "@/components/survey-card";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/me";
 
@@ -110,6 +111,8 @@ export function HomeView() {
           </Tile>
         )}
       </section>
+
+      <SurveyCard />
     </>
   );
 }

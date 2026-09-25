@@ -20,11 +20,11 @@ Phase 6  Growth + monetization        month 6+
 **Goal:** get proof of demand before building much, and set up the base everything else runs on.
 
 **Validation (do this first, alongside the setup work)**
-- [ ] Pick a name, buy the domain (Cloudflare Registrar), set up social handles
-- [ ] Landing page on Cloudflare Pages: pitch, the four modes, and a waitlist
-- [ ] Waitlist collects **college email + university + country**. The domain check here becomes the sign-up allowlist later
+- [~] Pick a name, buy the domain (Cloudflare Registrar), set up social handles. **Name: Quad.** Domain and handles still to do
+- [x] Landing page: pitch, the four modes, how verification works, safety promise (served by the Next.js app on the VPS instead of Cloudflare Pages)
+- [x] Waitlist: students sign up for real now (verified college email + university) and land on a Home that says chat opens at beta. Unknown universities go to the request queue
 - [ ] Recruit 3–5 launch campuses: friends, societies, Reddit/Discord, Instagram reels
-- [ ] Short survey: which mode would you use most? When are you free?
+- [x] Short survey on Home: which mode would you use most, and when are you free (stored as UTC hours). Results chart in Admin → Survey
 
 **Foundation**
 - [x] Monorepo (pnpm + Turborepo)
@@ -38,11 +38,11 @@ Phase 6  Growth + monetization        month 6+
   ```
 - [x] Docker Compose for local dev: Postgres, Redis (coturn arrives with Phase 2)
 - [x] CI with GitHub Actions: lint, typecheck, unit tests on every PR
-- [ ] Provision the VPS: Docker, Caddy (automatic HTTPS), firewall, daily `pg_dump` backup to R2
+- [~] Provision the VPS: **deployment kit ready and tested** (Dockerfiles, `infra/docker-compose.prod.yml`, Caddy, daily backups with optional R2 copy, hourly retention cleanup, `docs/DEPLOY.md`). Renting the server is still to do
 - [x] Database schema v1 + migrations (Drizzle or Prisma)
 - [x] Seed `universities` from `Hipo/university-domains-list` + a disposable-email blocklist
-- [ ] Draft the ToS, Privacy Policy and Community Guidelines (free generators, plain language)
-- [~] **Design system foundation** (tokens, fonts and core components done; shadcn/ui primitives and Ladle preview still to do) (`packages/ui`, see `DESIGN.md`): tokens (light/dark/calm) in CSS variables + Tailwind v4, fonts, restyled shadcn/ui primitives, and core components (Button, Chip, Sticker, Tile, ID card, Sheet, Toast, OTP input) with a Ladle preview
+- [x] Draft the ToS, Privacy Policy and Community Guidelines (`/terms`, `/privacy`, `/guidelines`). Placeholders in [BRACKETS] and a lawyer review before launch
+- [x] **Design system foundation** (`packages/ui`, see `DESIGN.md`): tokens (light/dark/calm) in CSS variables + Tailwind v4, fonts, core components (Button, Chip, Sticker, Tile, ID card, OTP input, Notice, Switch, Pip), previewed live at `/styleguide`. Radix-based Sheet/Dialog/Toast come in Phase 2 when calls need them
 - [x] Landing page built on the design system (it's the first real test of the look)
 
 **Gate → Phase 1:** repo, CI and server are live. The waitlist is growing, with a target of **300+ sign-ups across 3–5 campuses** by the end of Phase 2.
@@ -62,6 +62,7 @@ Phase 6  Growth + monetization        month 6+
 - [x] Accept the Community Guidelines during onboarding
 - [x] Rate limits on OTP (per email, IP and domain) via Redis
 - [x] Admin panel v0: user list, domain requests, suspend/ban
+- [x] Admin can allowlist whole domains or approve single email addresses (with a guard against allowlisting Gmail etc.)
 - [x] Emails through Resend (free tier); console output in development
 - [x] Tests: OTP flow, domain matching, age gate
 

@@ -171,6 +171,17 @@ export function OnboardingFlow() {
               All guidelines
             </Link>
           </div>
+          <p className="text-sm text-muted">
+            By tapping “I'm in” you agree to the{" "}
+            <Link href="/terms" target="_blank" className="font-semibold text-ink underline">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" target="_blank" className="font-semibold text-ink underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
         </div>
       )}
     </div>

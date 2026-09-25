@@ -11,7 +11,7 @@ import { useMe } from "@/lib/me";
 type Step =
   | { kind: "email" }
   | { kind: "code"; university: University }
-  | { kind: "request"; domain: string }
+  | { kind: "request"; domain: string; personal: boolean }
   | { kind: "requested" };
 
 export function JoinFlow() {
@@ -36,7 +36,7 @@ export function JoinFlow() {
           email={email}
           setEmail={setEmail}
           onSent={(university) => setStep({ kind: "code", university })}
-          onUnknown={(domain) => setStep({ kind: "request", domain })}
+          onUnknown={(domain, personal) => setStep({ kind: "request", domain, personal })}
         />
       )}
       {step.kind === "code" && (
@@ -54,6 +54,7 @@ export function JoinFlow() {
         <RequestStep
           email={email}
           domain={step.domain}
+          personal={step.personal}
           onBack={() => setStep({ kind: "email" })}
           onDone={() => setStep({ kind: "requested" })}
         />
@@ -86,7 +87,7 @@ function EmailStep({
   email: string;
   setEmail: (v: string) => void;
   onSent: (u: University) => void;
-  onUnknown: (domain: string) => void;
+  onUnknown: (domain: string, personal: boolean) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,7 +104,8 @@ function EmailStep({
       onSent(res.university);
     } catch (err) {
       if (err instanceof ApiClientError && err.code === "UNKNOWN_DOMAIN") {
-        onUnknown((err.details as { domain: string }).domain);
+        const details = err.details as { domain: string; personal?: boolean };
+        onUnknown(details.domain, details.personal === true);
       } else {
         setError(errorMessage(err));
       }
@@ -142,6 +144,14 @@ function EmailStep({
       </Button>
       <p className="text-sm text-muted">
         By continuing you agree to the{" "}
+        <Link href="/terms" className="font-semibold text-ink underline">
+          Terms
+        </Link>
+        ,{" "}
+        <Link href="/privacy" className="font-semibold text-ink underline">
+          Privacy Policy
+        </Link>{" "}
+        and{" "}
         <Link href="/guidelines" className="font-semibold text-ink underline">
           community guidelines
         </Link>
@@ -265,11 +275,13 @@ function CodeStep({
 function RequestStep({
   email,
   domain,
+  personal,
   onBack,
   onDone,
 }: {
   email: string;
   domain: string;
+  personal: boolean;
   onBack: () => void;
   onDone: () => void;
 }) {
@@ -301,10 +313,18 @@ function RequestStep({
         <Pip size={56} mood="wow" />
         <div className="grid gap-1">
           <h1 className="text-[clamp(28px,6vw,39px)] font-extrabold leading-[1.05] tracking-[-0.02em]">
-            We don't know <span className="break-all text-grape-text">@{domain}</span> yet
+            {personal ? (
+              "That's a personal email"
+            ) : (
+              <>
+                We don't know <span className="break-all text-grape-text">@{domain}</span> yet
+              </>
+            )}
           </h1>
           <p className="text-muted">
-            Tell us your university and we'll add it. We check each one by hand.
+            {personal
+              ? "Use the email your university gave you. If your university doesn't give students an email, tell us where you study and we'll check by hand."
+              : "Tell us your university and we'll add it. We check each one by hand."}
           </p>
         </div>
       </div>

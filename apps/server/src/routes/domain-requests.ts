@@ -3,10 +3,10 @@ import { and, eq } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import type { Ctx } from "../context";
 import { domainRequests } from "../db/schema";
-import { isAlumniDomain, isDisposableDomain, splitEmail } from "../lib/email";
+import { canonicalEmail, isAlumniDomain, isDisposableDomain, splitEmail } from "../lib/email";
 import { AppError, parse } from "../lib/errors";
 import { enforce } from "../lib/rate-limit";
-import { findUniversityForDomain } from "../lib/users";
+import { resolveUniversity } from "../lib/users";
 
 export function domainRequestRoutes(app: FastifyInstance, ctx: Ctx) {
   app.post("/api/domain-requests", async (req, reply) => {
@@ -20,7 +20,7 @@ export function domainRequestRoutes(app: FastifyInstance, ctx: Ctx) {
     if (isDisposableDomain(domain)) {
       throw new AppError(400, "DISPOSABLE_EMAIL", "Use your college email, not a temporary one.");
     }
-    if (await findUniversityForDomain(ctx.db, domain)) {
+    if (await resolveUniversity(ctx.db, canonicalEmail(input.email))) {
       throw new AppError(
         409,
         "CONFLICT",

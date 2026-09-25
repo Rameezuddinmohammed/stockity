@@ -321,7 +321,7 @@ Every shareable image has the handle and URL in the corner and never shows anoth
 - **Icons:** `@phosphor-icons/react`.
 - **Fonts:** self-hosted via `next/font/google` (Bricolage Grotesque, Figtree, IBM Plex Mono) with `display: swap`; subset Latin first and load Noto script fallbacks on demand.
 - **Share images:** render with `@vercel/og`/Satori (runs anywhere) or client-side `html-to-image`.
-- **Component preview:** Ladle or Storybook in `packages/ui` so every component is reviewed in light, dark, and calm modes.
+- **Component preview:** the `/styleguide` page in the web app renders every `@quad/ui` component with the real CSS; review it in light, dark, and calm modes. (It replaces Ladle/Storybook: no extra tooling.)
 - **Performance budget:** call screen JS < 200KB gzip, 60fps on a mid-range Android phone. Overlays over video use only `transform` and `opacity`.
 
 ---

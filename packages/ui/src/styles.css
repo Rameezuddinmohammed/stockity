@@ -21,6 +21,8 @@
   --danger: #c81e2a;
   --success: #127a4a;
   --warn: #9a5b00;
+  /* Single-series chart marks (validated ≥3:1 on surface in both themes). */
+  --chart-mark: var(--grape-strong);
   --holo: conic-gradient(from 200deg, #7b5cff, #4fc3ff, #d4ff3a, #ff5fa2, #7b5cff);
   --shadow: 4px 4px 0 var(--line);
   --shadow-lg: 6px 6px 0 var(--line);
@@ -39,6 +41,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
+    --chart-mark: var(--grape);
     --ink: #f7f4ff;
     --bg: #120f1c;
     --surface: #1e1a2e;
@@ -53,6 +56,7 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
+  --chart-mark: var(--grape);
   --ink: #f7f4ff;
   --bg: #120f1c;
   --surface: #1e1a2e;
@@ -82,6 +86,7 @@
   --color-sky: var(--sky);
   --color-danger: var(--danger);
   --color-success: var(--success);
+  --color-warn: var(--warn);
   --font-display: var(--f-display);
   --font-body: var(--f-body);
   --font-mono: var(--f-mono);
@@ -682,4 +687,62 @@ textarea.q-input {
   75% {
     transform: translateX(6px);
   }
+}
+
+/* ---------- long-form text (legal pages, guidelines) ---------- */
+.q-prose {
+  font-size: 16px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.q-prose > :not(:first-child) {
+  margin-top: 1em;
+}
+.q-prose h1 {
+  font-size: clamp(32px, 5vw, 49px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.q-prose h2 {
+  font-family: var(--f-body);
+  font-size: 21px;
+  font-weight: 700;
+  margin-top: 2em;
+}
+.q-prose a {
+  font-weight: 600;
+  text-decoration: underline;
+}
+.q-prose ul,
+.q-prose ol {
+  padding-left: 1.3em;
+}
+.q-prose ul {
+  list-style: disc;
+}
+.q-prose ol {
+  list-style: decimal;
+}
+.q-prose li + li {
+  margin-top: 0.35em;
+}
+.q-prose em {
+  color: var(--muted);
+}
+.q-prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.q-prose th,
+.q-prose td {
+  border: 1px solid var(--hairline);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.q-prose th {
+  background: var(--surface);
 }

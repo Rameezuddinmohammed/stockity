@@ -13,3 +13,5 @@ Monorepo: `apps/web` (Next.js 16 + Tailwind v4), `apps/server` (Fastify 5 + Driz
 - New routes get integration tests in `apps/server/test/` using the harness (`createHarness()`), which gives a controllable clock via `h.advance(ms)`.
 - UI follows `docs/DESIGN.md`: use `@quad/ui` components and tokens, never raw hex in app code. Safety flows (reports, bans, age, account deletion) use the plain style: no stickers, tilt or mascot.
 - No fake numbers in the UI (online counts etc.); only real data from the API.
+- Retention periods in `apps/server/src/jobs/cleanup.ts` (and the 14-day backups in `infra/backup/backup.sh`) are promised in `apps/web/content/legal/privacy.md`. Change them together. When a feature collects new data, update the Privacy Policy in the same PR.
+- Deployment: `docs/DEPLOY.md`. Production images build from the repo root (`apps/*/Dockerfile`); CI builds them on every PR.

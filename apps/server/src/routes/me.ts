@@ -5,13 +5,16 @@ import {
   MIN_AGE,
   onboardingSchema,
   profileUpdateSchema,
+  type SurveyAnswers,
+  type SurveyMode,
   socialsSchema,
+  surveySchema,
 } from "@quad/shared";
 import { eq } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { clearSessionCookie, requireActive, requireUser } from "../auth";
 import type { Ctx } from "../context";
-import { blockedEmails, profiles, socials, users } from "../db/schema";
+import { blockedEmails, profiles, socials, surveyResponses, users } from "../db/schema";
 import { AppError, parse } from "../lib/errors";
 import { avatarColorFor, loadMe } from "../lib/users";
 import { blockedHash } from "./auth";
@@ -81,6 +84,39 @@ export function meRoutes(app: FastifyInstance, ctx: Ctx) {
       }
     });
     return loadMe(ctx.db, user.id);
+  });
+
+  app.get("/api/me/survey", async (req): Promise<{ answers: SurveyAnswers | null }> => {
+    const { user } = requireActive(req);
+    const [row] = await ctx.db
+      .select()
+      .from(surveyResponses)
+      .where(eq(surveyResponses.userId, user.id));
+    return {
+      answers: row
+        ? {
+            modes: row.modes as SurveyMode[],
+            freeHoursUtc: row.freeHoursUtc,
+            timezone: row.timezone,
+          }
+        : null,
+    };
+  });
+
+  app.put("/api/me/survey", async (req): Promise<{ answers: SurveyAnswers }> => {
+    const { user } = requireActive(req);
+    const input = parse(surveySchema, req.body);
+    const values = {
+      modes: input.modes,
+      freeHoursUtc: input.freeHoursUtc,
+      timezone: input.timezone ?? null,
+      updatedAt: ctx.now(),
+    };
+    await ctx.db
+      .insert(surveyResponses)
+      .values({ userId: user.id, ...values })
+      .onConflictDoUpdate({ target: surveyResponses.userId, set: values });
+    return { answers: { ...values } };
   });
 
   app.delete("/api/me", async (req, reply) => {

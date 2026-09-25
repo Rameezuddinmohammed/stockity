@@ -9,4 +9,5 @@ export { Logo, Pip } from "./components/Pip";
 export { Sticker } from "./components/Sticker";
 export { Switch } from "./components/Switch";
 export { Tile } from "./components/Tile";
+export { Verified } from "./components/Verified";
 export { cx, flag, initial } from "./cx";

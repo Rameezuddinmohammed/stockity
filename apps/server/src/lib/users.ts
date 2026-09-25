@@ -9,8 +9,15 @@ import {
 } from "@quad/shared";
 import { eq, inArray } from "drizzle-orm";
 import type { Db } from "../db/client";
-import { profiles, socials, universities, universityDomains, users } from "../db/schema";
-import { domainCandidates } from "./email";
+import {
+  approvedEmails,
+  profiles,
+  socials,
+  universities,
+  universityDomains,
+  users,
+} from "../db/schema";
+import { domainCandidates, splitEmail } from "./email";
 import { AppError } from "./errors";
 
 /** Most specific allowlisted domain wins (mail.uni.edu before uni.edu). */
@@ -32,6 +39,21 @@ export async function findUniversityForDomain(db: Db, domain: string): Promise<U
   rows.sort((a, b) => b.domain.length - a.domain.length);
   const { domain: _domain, ...university } = rows[0] as (typeof rows)[number];
   return university;
+}
+
+/** An admin-approved address wins; otherwise fall back to the email's domain. */
+export async function resolveUniversity(db: Db, canonical: string): Promise<University | null> {
+  const [approved] = await db
+    .select({
+      id: universities.id,
+      name: universities.name,
+      country: universities.country,
+      countryCode: universities.countryCode,
+    })
+    .from(approvedEmails)
+    .innerJoin(universities, eq(universities.id, approvedEmails.universityId))
+    .where(eq(approvedEmails.emailCanonical, canonical));
+  return approved ?? findUniversityForDomain(db, splitEmail(canonical).domain);
 }
 
 export function avatarColorFor(id: string): AvatarColor {

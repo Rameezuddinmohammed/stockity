@@ -35,7 +35,15 @@ export default function Guidelines() {
       </ol>
       <p className="text-sm text-muted">
         See something that breaks these rules? Use Report during a chat. Our team reviews every
-        report.
+        report. See also the{" "}
+        <Link href="/terms" className="underline">
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="underline">
+          Privacy Policy
+        </Link>
+        .
       </p>
     </div>
   );

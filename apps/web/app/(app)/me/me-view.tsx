@@ -14,6 +14,7 @@ import {
   type SocialPlatform,
 } from "@quad/shared";
 import { Button, IdCard, Notice, TextArea, TextField, ToggleChip } from "@quad/ui";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { api, errorMessage } from "@/lib/api";
@@ -349,6 +350,17 @@ function Account({ me }: { me: Me }) {
           </Button>
         )}
       </div>
+      <p className="text-sm text-muted">
+        Read the{" "}
+        <Link href="/terms" className="underline">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="underline">
+          Privacy Policy
+        </Link>
+        .
+      </p>
       <div className="grid gap-3 border-t border-hairline pt-4">
         {confirmDelete ? (
           <>
