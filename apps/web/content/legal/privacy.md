@@ -37,6 +37,7 @@ The short version:
 - **Messages:** the text you send is passed to the other person. It isn't saved, except that our server keeps the last few messages of a chat in memory while the chat is live. Those are saved only if someone reports the chat.
 - **Video and audio** travel through our relay server, so the other person never sees your IP address. **Calls are never recorded.**
 - **Blocks:** who you've blocked, so you're never matched again.
+- **Quad Bot:** if you choose "Practice with Quad Bot", your messages go to our own server, which replies with scripted messages. They aren't stored and aren't sent to any AI company. The bot's "video" is drawn in your browser. It can show a music video embedded from YouTube (youtube-nocookie.com), and when it does, YouTube receives your IP address as it would for any embedded video.
 
 **Safety and moderation**
 

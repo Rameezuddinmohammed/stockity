@@ -11,6 +11,10 @@ export type IdCardProps = {
   avatarColor?: "grape" | "zest" | "tang" | "gum" | "sky";
   cardNo?: string;
   tint?: string;
+  /** Replaces the initial in the photo box (e.g. 🤖 for Quad Bot). */
+  avatarEmoji?: string;
+  /** Replaces the flag + country code in the corner (e.g. "BOT"). */
+  regionLabel?: string;
   className?: string;
   style?: CSSProperties;
 };
@@ -26,6 +30,8 @@ export function IdCard({
   avatarColor = "zest",
   cardNo,
   tint,
+  avatarEmoji,
+  regionLabel,
   className,
   style,
 }: IdCardProps) {
@@ -39,12 +45,10 @@ export function IdCard({
     >
       <div className="q-id__top">
         <span>Quad ID{cardNo ? ` · ${cardNo}` : ""}</span>
-        <span>
-          {flag(countryCode)} {countryCode.toUpperCase()}
-        </span>
+        <span>{regionLabel ?? `${flag(countryCode)} ${countryCode.toUpperCase()}`}</span>
       </div>
       <div className={cx("q-id__avatar", `q-fill-${avatarColor}`)} aria-hidden="true">
-        {initial(name)}
+        {avatarEmoji ?? initial(name)}
       </div>
       <div className="q-id__name">{name || "Your name"}</div>
       <div>

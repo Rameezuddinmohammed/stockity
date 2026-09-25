@@ -43,6 +43,8 @@ export type SignalData = z.infer<typeof signalData>;
 export const clientMessageSchema = z.discriminatedUnion("t", [
   z.object({ t: z.literal("queue.join"), mode: z.enum(CALL_MODES) }),
   z.object({ t: z.literal("queue.leave") }),
+  /** Practice chat with Quad Bot (always labelled as a bot, never a student). */
+  z.object({ t: z.literal("bot.start"), mode: z.enum(CALL_MODES) }),
   z.object({ t: z.literal("signal"), data: signalData }),
   z.object({
     t: z.literal("chat.send"),
@@ -78,7 +80,13 @@ export type PeerCard = {
   interests: string[];
   languages: string[];
   avatarColor: AvatarColor;
+  /** Set for Quad Bot, the practice partner. The UI must always show it as a bot. */
+  bot?: true;
 };
+
+/** What Quad Bot's "camera" shows: the client renders these scenes locally. */
+export const BOT_SCENES = ["robot", "meme", "campus", "rickroll"] as const;
+export type BotScene = (typeof BOT_SCENES)[number];
 
 export type IceConfig = { iceServers: RTCIceServerLike[]; iceTransportPolicy: "all" | "relay" };
 export type RTCIceServerLike = { urls: string | string[]; username?: string; credential?: string };
@@ -112,6 +120,7 @@ export type ServerMessage =
   | { t: "media.state"; audio: boolean; video: boolean }
   | { t: "call.ended"; callId: string; reason: EndReason; by: "you" | "them" }
   | { t: "report.received"; callId: string }
+  | { t: "bot.scene"; scene: BotScene }
   | { t: "kicked"; reason: "suspended" | "banned" | "signed_out" | "replaced" }
   | { t: "error"; code: string; message: string };
 
