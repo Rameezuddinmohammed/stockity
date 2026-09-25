@@ -27,7 +27,7 @@ Phase 6  Growth + monetization        month 6+
 - [ ] Short survey: which mode would you use most? When are you free?
 
 **Foundation**
-- [ ] Monorepo (pnpm + Turborepo)
+- [x] Monorepo (pnpm + Turborepo)
   ```
   apps/web        Next.js + Tailwind (web app + admin panel)
   apps/server     Node/TS: REST API + WebSocket realtime (one process at first)
@@ -36,14 +36,14 @@ Phase 6  Growth + monetization        month 6+
   infra/          docker-compose (postgres, redis, coturn, caddy), backup scripts
   docs/
   ```
-- [ ] Docker Compose for local dev: Postgres, Redis, coturn
-- [ ] CI with GitHub Actions: lint, typecheck, unit tests on every PR
+- [x] Docker Compose for local dev: Postgres, Redis (coturn arrives with Phase 2)
+- [x] CI with GitHub Actions: lint, typecheck, unit tests on every PR
 - [ ] Provision the VPS: Docker, Caddy (automatic HTTPS), firewall, daily `pg_dump` backup to R2
-- [ ] Database schema v1 + migrations (Drizzle or Prisma)
-- [ ] Seed `universities` from `Hipo/university-domains-list` + a disposable-email blocklist
+- [x] Database schema v1 + migrations (Drizzle or Prisma)
+- [x] Seed `universities` from `Hipo/university-domains-list` + a disposable-email blocklist
 - [ ] Draft the ToS, Privacy Policy and Community Guidelines (free generators, plain language)
-- [ ] **Design system foundation** (`packages/ui`, see `DESIGN.md`): tokens (light/dark/calm) in CSS variables + Tailwind v4, fonts, restyled shadcn/ui primitives, and core components (Button, Chip, Sticker, Tile, ID card, Sheet, Toast, OTP input) with a Ladle preview
-- [ ] Landing page built on the design system (it's the first real test of the look)
+- [~] **Design system foundation** (tokens, fonts and core components done; shadcn/ui primitives and Ladle preview still to do) (`packages/ui`, see `DESIGN.md`): tokens (light/dark/calm) in CSS variables + Tailwind v4, fonts, restyled shadcn/ui primitives, and core components (Button, Chip, Sticker, Tile, ID card, Sheet, Toast, OTP input) with a Ladle preview
+- [x] Landing page built on the design system (it's the first real test of the look)
 
 **Gate → Phase 1:** repo, CI and server are live. The waitlist is growing, with a target of **300+ sign-ups across 3–5 campuses** by the end of Phase 2.
 
@@ -52,18 +52,18 @@ Phase 6  Growth + monetization        month 6+
 ## Phase 1: Identity (weeks 3–4)
 **Goal:** a verified 18+ student can sign up, build a profile, and log in again.
 
-- [ ] Email OTP: request → 6-digit code (hashed, 10-minute expiry, 5 attempts) → session
-- [ ] Domain allowlist check, including subdomains (`cs.uni.edu`). Reject alumni and disposable domains
-- [ ] "My university isn't listed" → request queue in the admin panel
-- [ ] Date of birth + 18+ confirmation. Under 18 is a hard block, and the email is flagged
-- [ ] Sessions: httpOnly cookie, refresh, log out from all devices
-- [ ] Profile: display name, university (filled in from the email domain), course/year, about, interests, languages, avatar
-- [ ] Socials: stored privately and never shown until both people Connect (Phase 3)
-- [ ] Accept the Community Guidelines during onboarding
-- [ ] Rate limits on OTP (per email, IP and domain) via Redis
-- [ ] Admin panel v0: user list, domain requests, suspend/ban
-- [ ] Emails through Resend or Brevo (free tier)
-- [ ] Tests: OTP flow, domain matching, age gate
+- [x] Email OTP: request → 6-digit code (hashed, 10-minute expiry, 5 attempts) → session
+- [x] Domain allowlist check, including subdomains (`cs.uni.edu`). Reject alumni and disposable domains
+- [x] "My university isn't listed" → request queue in the admin panel
+- [x] Date of birth + 18+ confirmation. Under 18 is a hard block, and the email is flagged
+- [x] Sessions: httpOnly cookie, refresh, log out from all devices
+- [x] Profile: display name, university (filled in from the email domain), course/year, about, interests, languages, card color (photo avatars later)
+- [x] Socials: stored privately and never shown until both people Connect (Phase 3)
+- [x] Accept the Community Guidelines during onboarding
+- [x] Rate limits on OTP (per email, IP and domain) via Redis
+- [x] Admin panel v0: user list, domain requests, suspend/ban
+- [x] Emails through Resend (free tier); console output in development
+- [x] Tests: OTP flow, domain matching, age gate
 
 **Deferred:** sign-up with a college ID. It means storing ID images, which is legally risky. Add it only if the domain-request queue shows real demand (Phase 6).
 
