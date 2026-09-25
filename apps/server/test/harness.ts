@@ -29,16 +29,34 @@ export async function createHarness() {
   const ctx = { config, db, redis, mailer, now: () => clock };
   const app = await buildApp(ctx);
 
+  let wsUrl = "";
+  const clients: { close(): Promise<number> }[] = [];
+
   const h = {
     app,
+    /** Starts listening on a random port (needed for WebSocket tests). */
+    async listen() {
+      if (!wsUrl) {
+        await app.listen({ port: 0, host: "127.0.0.1" });
+        const addr = app.server.address();
+        if (!addr || typeof addr === "string") throw new Error("no address");
+        wsUrl = `ws://127.0.0.1:${addr.port}/api/ws`;
+      }
+      return wsUrl;
+    },
+    track<T extends { close(): Promise<number> }>(client: T): T {
+      clients.push(client);
+      return client;
+    },
     ctx,
     mailer,
     advance(ms: number) {
       clock = new Date(clock.getTime() + ms);
     },
     async reset() {
+      await Promise.all(clients.splice(0).map((c) => c.close().catch(() => 0)));
       await client.unsafe(
-        "TRUNCATE survey_responses, approved_emails, admin_actions, domain_requests, blocked_emails, sessions, otp_codes, socials, profiles, users, university_domains, universities CASCADE",
+        "TRUNCATE report_evidence, reports, moderation_events, user_notices, user_devices, banned_devices, blocks, calls, survey_responses, approved_emails, admin_actions, domain_requests, blocked_emails, sessions, otp_codes, socials, profiles, users, university_domains, universities CASCADE",
       );
       await redis.flushdb();
       await seedUniversities(db, fixture);

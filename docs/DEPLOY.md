@@ -3,8 +3,9 @@
 Everything runs on **one VPS** with Docker Compose (see `infra/docker-compose.prod.yml`):
 
 ```
-Internet ──► Caddy (HTTPS, headers) ──┬── /api/* ──► server  (Fastify, runs migrations on start)
+Internet ──► Caddy (HTTPS, headers) ──┬── /api/* ──► server  (Fastify API + /api/ws live chat)
                                       └── /*     ──► web     (Next.js standalone)
+Browsers ──► coturn :3478 (TURN relay for all call video/audio; IPs stay hidden)
              server ──► postgres, redis
              backup ──► daily pg_dump, kept 14 days (optional copy to Cloudflare R2)
 ```
@@ -25,12 +26,14 @@ Pick a region close to your first campuses. Ubuntu 24.04 is assumed below.
 ```bash
 # as root on the server
 apt update && apt install -y docker.io docker-compose-v2 git ufw
-ufw allow OpenSSH && ufw allow 80,443/tcp && ufw allow 443/udp && ufw enable
-# Phase 2 (video) will also need: ufw allow 3478/udp && ufw allow 5349/tcp && ufw allow 49152:65535/udp
+ufw allow OpenSSH && ufw allow 80,443/tcp && ufw allow 443/udp
+ufw allow 3478/tcp && ufw allow 3478/udp && ufw allow 49160:49660/udp   # TURN relay for video
+ufw enable
 
 git clone https://github.com/<you>/<repo>.git /opt/quad && cd /opt/quad
 cp .env.production.example .env.production
-nano .env.production   # fill APP_SECRET, POSTGRES_PASSWORD, ADMIN_EMAILS (and email + R2 settings)
+nano .env.production   # fill APP_SECRET, POSTGRES_PASSWORD, ADMIN_EMAILS, PUBLIC_IP, TURN_HOST, TURN_SECRET
+                       # (and email + R2 settings)
 ```
 
 ## 3. Start it
@@ -51,7 +54,16 @@ Open `http://<server-ip>/`. Before you have a domain, keep `DOMAIN=:80` and `APP
 4. Fill the placeholders in `apps/web/content/legal/*.md`, get them reviewed, and set `LEGAL_DRAFT = false` in `apps/web/components/legal-page.tsx`.
 5. `docker compose ... up -d --build` again. Caddy fetches the HTTPS certificate automatically.
 
-## 5. Backups
+## 5. Video calls (TURN)
+
+Every call's media goes through the `coturn` container, so students never see each other's IP address. The API hands each browser short-lived TURN credentials (an HMAC signed with `TURN_SECRET`), so there's no static password to leak.
+
+- **Bandwidth is the main cost.** Calls are capped at about 480p / 500 kbps each way, which is roughly 0.5–1 GB of relay traffic per call-hour. Check it in your provider's dashboard.
+- **Ports:** 3478 (UDP and TCP) plus the relay range 49160–49660/udp. That range allows about 250 simultaneous calls; widen `--min-port/--max-port` in the compose file to go higher.
+- **Strict campus Wi-Fi** sometimes blocks everything except 443. The fix is TURN over TLS on port 443, which needs a second IP (Caddy already uses 443 on the first one). Add it once students report "Video couldn't connect".
+- **Quick test:** open `/chat` in two browsers on different networks (for example phone data and home Wi-Fi) and start a video chat.
+
+## 6. Backups
 
 - The `backup` service writes `/backups/quad-YYYYMMDD-HHMM.dump` daily and deletes dumps older than 14 days. The Privacy Policy promises 14 days, so change both together.
 - **Offsite copy (recommended):** create an R2 bucket plus an API token, then set `RCLONE_REMOTE=r2:<bucket>`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and `R2_ENDPOINT`.
@@ -64,7 +76,7 @@ Open `http://<server-ip>/`. Before you have a domain, keep `DOMAIN=:80` and `APP
 
   Test a restore once before launch.
 
-## 6. Updating
+## 7. Updating
 
 ```bash
 cd /opt/quad && git pull
@@ -73,8 +85,8 @@ docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d
 
 Migrations run automatically when the server container starts.
 
-## 7. Everyday checks
+## 8. Everyday checks
 
 - Logs: `docker compose -f infra/docker-compose.prod.yml logs -f server`. The hourly `retention cleanup` line shows what was deleted.
-- Admin panel: `/admin` for university requests, domains, approved emails, users and survey results.
+- Admin panel: `/admin`. Work the **Reports** queue first (oldest first). Then university requests, domains, approved emails, users and survey results.
 - Keep an eye on disk (`df -h`) and bandwidth in your provider's dashboard.

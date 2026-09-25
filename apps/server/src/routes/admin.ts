@@ -23,18 +23,21 @@ import type { Ctx } from "../context";
 import {
   adminActions,
   approvedEmails,
+  bannedDevices,
   domainRequests,
   profiles,
-  sessions,
   surveyResponses,
   universities,
   universityDomains,
+  userNotices,
   users,
 } from "../db/schema";
 import { canonicalEmail, isDisposableDomain, splitEmail } from "../lib/email";
 import { AppError, parse } from "../lib/errors";
 import { domainApprovedMail, domainRejectedMail } from "../lib/mailer";
 import { resolveTarget } from "../lib/universities";
+import type { Hub } from "../realtime/hub";
+import { enforce } from "../safety/enforce";
 
 const idParam = z.object({ id: z.uuid() });
 const usersQuery = z.object({
@@ -74,7 +77,7 @@ function assertDomainAllowlistable(domain: string) {
   }
 }
 
-export function adminRoutes(app: FastifyInstance, ctx: Ctx) {
+export function adminRoutes(app: FastifyInstance, ctx: Ctx, hub: Hub) {
   async function loadTarget(req: FastifyRequest, adminId: string) {
     const { id } = parse(idParam, req.params);
     const [target] = await ctx.db.select().from(users).where(eq(users.id, id));
@@ -148,16 +151,20 @@ export function adminRoutes(app: FastifyInstance, ctx: Ctx) {
     if (target.status === "banned") throw new AppError(409, "CONFLICT", "This user is banned.");
     const { hours, reason } = parse(adminSuspendSchema, req.body);
     const now = ctx.now();
-    await ctx.db
-      .update(users)
-      .set({
-        status: "suspended",
-        suspendedUntil: new Date(now.getTime() + hours * 3_600_000),
-        statusReason: reason,
-        updatedAt: now,
-      })
-      .where(eq(users.id, target.id));
+    const until = new Date(now.getTime() + hours * 3_600_000);
+    await ctx.db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({ status: "suspended", suspendedUntil: until, statusReason: reason, updatedAt: now })
+        .where(eq(users.id, target.id));
+      await tx.insert(userNotices).values({
+        userId: target.id,
+        kind: "suspension",
+        message: `Your account is suspended until ${until.toUTCString()}: ${reason}.`,
+      });
+    });
     await log(admin.id, `suspend:${hours}h`, { targetUserId: target.id, reason });
+    hub.kick(target.id, "suspended");
     return { ok: true };
   });
 
@@ -165,20 +172,20 @@ export function adminRoutes(app: FastifyInstance, ctx: Ctx) {
     const { user: admin } = requireAdmin(req);
     const target = await loadTarget(req, admin.id);
     const { reason } = parse(adminBanSchema, req.body);
-    await ctx.db.transaction(async (tx) => {
-      await tx
-        .update(users)
-        .set({ status: "banned", suspendedUntil: null, statusReason: reason, updatedAt: ctx.now() })
-        .where(eq(users.id, target.id));
-      await tx.delete(sessions).where(eq(sessions.userId, target.id));
+    await enforce(ctx, hub, {
+      userId: target.id,
+      action: "ban",
+      reason,
+      adminId: admin.id,
+      countsAsStrike: false,
     });
-    await log(admin.id, "ban", { targetUserId: target.id, reason });
     return { ok: true };
   });
 
   app.post("/api/admin/users/:id/reinstate", async (req) => {
     const { user: admin } = requireAdmin(req);
     const target = await loadTarget(req, admin.id);
+    await ctx.db.delete(bannedDevices).where(eq(bannedDevices.userId, target.id));
     await ctx.db
       .update(users)
       .set({

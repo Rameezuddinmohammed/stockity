@@ -15,3 +15,5 @@ Monorepo: `apps/web` (Next.js 16 + Tailwind v4), `apps/server` (Fastify 5 + Driz
 - No fake numbers in the UI (online counts etc.); only real data from the API.
 - Retention periods in `apps/server/src/jobs/cleanup.ts` (and the 14-day backups in `infra/backup/backup.sh`) are promised in `apps/web/content/legal/privacy.md`. Change them together. When a feature collects new data, update the Privacy Policy in the same PR.
 - Deployment: `docs/DEPLOY.md`. Production images build from the repo root (`apps/*/Dockerfile`); CI builds them on every PR.
+- Live chat: `apps/server/src/realtime/` (hub = connections + calls, matchmaker = Redis Lua pairing). The protocol is typed in `packages/shared/src/realtime.ts`: add message types there first. WebSocket tests use `h.listen()` + `test/ws-client.ts`.
+- Cascade layers: `packages/ui/src/styles.css` component classes live in `@layer components`, so Tailwind utilities override them. Keep new component CSS inside that layer.

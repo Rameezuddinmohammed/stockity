@@ -1,15 +1,18 @@
 "use client";
 
-import { Avatar, Logo, Notice, Switch } from "@quad/ui";
+import type { Me } from "@quad/shared";
+import { Avatar, Button, Logo, Notice, Switch } from "@quad/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
+import { api } from "@/lib/api";
 import { readCalm, writeCalm } from "@/lib/calm";
-import { useGuard } from "@/lib/me";
+import { useGuard, useMe } from "@/lib/me";
 import { Loading } from "./loading";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const me = useGuard("active");
+  const { setMe } = useMe();
   const pathname = usePathname();
   const [calm, setCalm] = useState(false);
   useEffect(() => setCalm(readCalm()), []);
@@ -60,6 +63,25 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main className="grid content-start gap-6">
+        {me.notices.map((n) => (
+          <Notice
+            key={n.id}
+            tone="danger"
+            title={n.kind === "warning" ? "Warning from the safety team" : "Account notice"}
+          >
+            <span className="grid gap-3">
+              {n.message}
+              <Button
+                size="sm"
+                variant="plain"
+                className="justify-self-start"
+                onClick={() => api<Me>(`/me/notices/${n.id}/seen`, { method: "POST" }).then(setMe)}
+              >
+                Got it
+              </Button>
+            </span>
+          </Notice>
+        ))}
         {me.status === "suspended" && (
           <Notice tone="danger" title="Your account is suspended">
             You can't chat or edit your profile until{" "}

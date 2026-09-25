@@ -31,9 +31,20 @@ The short version:
 - **Session records.** For each device you're signed in on: a hashed session token, your IP address, your browser's user-agent string, and when the session was last used.
 - **Short-lived counters** keyed by IP address or email, used to stop spam and brute-force attempts. These expire within 24 hours.
 
+**Chats (Just Chat)**
+
+- **Call records:** who was matched with whom, whether it was video or text, when it started and ended, and how it ended (for example "next" or "reported"). There's no content in these records.
+- **Messages:** the text you send is passed to the other person. It isn't saved, except that our server keeps the last few messages of a chat in memory while the chat is live. Those are saved only if someone reports the chat.
+- **Video and audio** travel through our relay server, so the other person never sees your IP address. **Calls are never recorded.**
+- **Blocks:** who you've blocked, so you're never matched again.
+
 **Safety and moderation**
 
-- Your account status (for example suspended or banned), the reason, and a log of actions our team takes.
+- **Reports:** who reported whom, the category and any note, and the last messages of that chat.
+- **Report frames:** when someone reports you during a video chat, their device captures a single still frame of the video they were receiving and sends it with the report.
+- **Automatic nudity checks:** your browser checks the video *you receive* for nudity using a model that runs on your own device. No video is uploaded for this. If it finds nudity, we store that a flag was raised, its score and which call it was in. Flags from several different people can suspend an account automatically until a person reviews it.
+- Your account status (for example suspended or banned), strikes, messages we send you about them, and a log of actions our team takes.
+- **Device identifier:** a random ID stored in a cookie. We keep a scrambled (hashed) copy linked to your account, so a ban can also cover the devices used for a banned account.
 
 **Things you choose to send us**
 
@@ -43,7 +54,9 @@ The short version:
 
 **On your device**
 
-- One **cookie**, `quad_session`, which keeps you signed in. It's strictly necessary, so we don't ask for consent.
+- Two **strictly necessary cookies**, so we don't ask for consent:
+  - `quad_session` keeps you signed in.
+  - `quad_device` is a random device ID used to enforce bans.
 - Your **Calm mode** preference, saved in your browser's local storage.
 - We don't use advertising or cross-site tracking cookies. Fonts are served from our own servers, not loaded from third parties.
 
@@ -55,13 +68,19 @@ The short version:
 | Check you're 18+ | date of birth, blocked-email hash | Legal obligation; legitimate interests (protecting minors) |
 | Show your profile to other students | profile fields | Contract |
 | Share socials with your mutual connections | socials | Contract (only after you both press Connect) |
-| Keep Quad safe: stop spam, abuse and ban evasion; enforce our Terms | IP address, user agent, rate-limit counters, account status, moderation log | Legitimate interests (a safe service for everyone) |
+| Match you with other students and run chats | call records, blocks, live messages (in memory only) | Contract |
+| Keep Quad safe: stop spam, abuse and ban evasion; review reports; enforce our Terms | IP address, user agent, device ID, rate-limit counters, reports and their evidence, nudity flags, account status, moderation log | Legitimate interests (a safe service for everyone) |
 | Add universities and approve individual emails | university requests | Legitimate interests; steps you asked us to take |
 | Decide what to build and when to hold events | survey answers | Consent (optional; you can change or clear your answers) |
 | Send service emails (sign-in codes, request updates) | email | Contract |
 | Comply with law and respond to valid legal requests | as needed | Legal obligation |
 
-We don't use your data for automated decisions that have legal or similarly significant effects on you, except the automatic under-18 check, which blocks sign-up. If you think that check got it wrong, contact us.
+Two automated decisions can affect your account:
+
+- The **under-18 check** blocks sign-up.
+- **Nudity flags** from several different people can suspend an account for 24 hours until a person reviews it.
+
+We don't use automated decisions for anything else that has legal or similarly significant effects on you. If you think an automated decision got it wrong, contact us.
 
 ## 3. Who we share it with
 
@@ -72,6 +91,7 @@ We share data only with:
 - **Service providers** that run Quad for us, under contracts that limit how they use it:
   - hosting ([HOSTING PROVIDER])
   - network and storage (Cloudflare: DNS, content delivery and encrypted backups)
+  - the call relay runs on our own server (not a third party)
   - email delivery (Resend)
 - **Other students**, who can see your profile, as described above.
 - **Authorities**, when the law requires it, or to protect someone's safety. For example, we report child sexual exploitation to the relevant authorities.
@@ -90,6 +110,11 @@ Our providers may process data outside your country, including in the United Sta
 | Sessions (with IP address and user agent) | Deleted when they expire: 30 days after last use, or when you sign out |
 | Sign-ups never finished | Deleted after 30 days |
 | University requests | Deleted 180 days after we review them |
+| Call records and nudity flags | 90 days |
+| Live chat messages | Not stored. Kept in memory only for the length of the chat |
+| Report frames and chat excerpts | 30 days, then deleted (the report itself stays, without the evidence) |
+| Blocks | Until either account is deleted |
+| Safety notices you've read | 90 days |
 | Moderation log | 2 years |
 | Banned accounts | The email, status and reason are kept while the ban is in force, so the ban can be enforced |
 | Under-18 blocked-email hash | Kept indefinitely to prevent re-registration (it can't be turned back into your email) |
@@ -129,11 +154,7 @@ No system is perfectly secure. If a breach affects you, we'll tell you and the a
 
 ## 9. Features that are coming
 
-Video chat, games and Cinema aren't live yet. **Before they launch we'll update this policy** and tell you. Our plan is that:
-
-- calls are not recorded
-- chats disappear when they end
-- when someone reports a chat, a still frame and the recent text messages are saved as evidence for our moderators and deleted after 30 days
+Quick Play games, Tables and Cinema aren't live yet. **Before they launch we'll update this policy** and tell you.
 
 ## 10. Changes
 

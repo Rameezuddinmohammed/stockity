@@ -7,7 +7,7 @@ import {
   type SocialPlatform,
   type University,
 } from "@quad/shared";
-import { eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import type { Db } from "../db/client";
 import {
   approvedEmails,
@@ -15,6 +15,7 @@ import {
   socials,
   universities,
   universityDomains,
+  userNotices,
   users,
 } from "../db/schema";
 import { domainCandidates, splitEmail } from "./email";
@@ -74,6 +75,16 @@ export async function loadMe(db: Db, userId: string): Promise<Me> {
     .select({ platform: socials.platform, handle: socials.handle })
     .from(socials)
     .where(eq(socials.userId, userId));
+  const notices = await db
+    .select({
+      id: userNotices.id,
+      kind: userNotices.kind,
+      message: userNotices.message,
+      createdAt: userNotices.createdAt,
+    })
+    .from(userNotices)
+    .where(and(eq(userNotices.userId, userId), isNull(userNotices.seenAt)))
+    .orderBy(asc(userNotices.createdAt));
   const { user, university, profile } = row;
   return {
     id: user.id,
@@ -101,5 +112,6 @@ export async function loadMe(db: Db, userId: string): Promise<Me> {
         }
       : null,
     socials: socialRows.map((s) => ({ platform: s.platform as SocialPlatform, handle: s.handle })),
+    notices: notices.map((n) => ({ ...n, createdAt: n.createdAt.toISOString() })),
   };
 }

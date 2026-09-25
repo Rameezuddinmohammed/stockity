@@ -20,6 +20,8 @@ import { AppError, parse } from "../lib/errors";
 import { otpMail } from "../lib/mailer";
 import { cooldown, enforce } from "../lib/rate-limit";
 import { loadMe, resolveUniversity } from "../lib/users";
+import type { Hub } from "../realtime/hub";
+import { isDeviceBanned } from "../safety/devices";
 
 const MAX_OTP_ATTEMPTS = 5;
 const FREE_PROVIDERS = new Set<string>(FREE_EMAIL_PROVIDERS);
@@ -43,7 +45,7 @@ async function assertEmailAllowed(ctx: Ctx, canonical: string) {
   }
 }
 
-export function authRoutes(app: FastifyInstance, ctx: Ctx) {
+export function authRoutes(app: FastifyInstance, ctx: Ctx, hub: Hub) {
   app.post("/api/auth/otp/request", async (req): Promise<OtpRequestResponse> => {
     const { email } = parse(otpRequestSchema, req.body);
     const canonical = canonicalEmail(email);
@@ -145,6 +147,9 @@ export function authRoutes(app: FastifyInstance, ctx: Ctx) {
     }
 
     await assertEmailAllowed(ctx, canonical);
+    if (await isDeviceBanned(ctx, req)) {
+      throw new AppError(403, "BANNED", "This device has been banned from Quad.");
+    }
     const isAdmin = ctx.config.ADMIN_EMAILS.includes(canonical);
     const verification = {
       verifiedAt: now,
@@ -196,6 +201,7 @@ export function authRoutes(app: FastifyInstance, ctx: Ctx) {
   app.post("/api/auth/logout-all", async (req, reply) => {
     const { user } = requireUser(req);
     await ctx.db.delete(sessions).where(eq(sessions.userId, user.id));
+    hub.kick(user.id, "signed_out");
     clearSessionCookie(ctx, reply);
     return { ok: true };
   });

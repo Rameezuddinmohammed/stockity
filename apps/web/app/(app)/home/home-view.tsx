@@ -52,27 +52,22 @@ export function HomeView() {
         <Tile
           color="grape"
           className="min-h-[180px] sm:col-span-2 lg:row-span-2"
-          soon="opens at beta"
           title={<span className="text-[clamp(28px,4vw,39px)]">Just Chat</span>}
           meta={
-            stats && stats.students > 0 ? (
-              <span className="text-[#EDE8FF]">
-                {stats.students.toLocaleString()} verified{" "}
-                {stats.students === 1 ? "student" : "students"} from{" "}
-                {stats.universities.toLocaleString()}{" "}
-                {stats.universities === 1 ? "university" : "universities"} in {stats.countries}{" "}
-                {stats.countries === 1 ? "country" : "countries"} are waiting.
-              </span>
-            ) : (
-              <span className="text-[#EDE8FF]">
-                Random 1:1 video + text with verified students.
-              </span>
-            )
+            <span className="text-[#EDE8FF]">
+              {stats && stats.online > 0
+                ? `${stats.online.toLocaleString()} ${stats.online === 1 ? "student" : "students"} online now. `
+                : ""}
+              Random 1:1 video + text with a verified student from anywhere.
+            </span>
           }
         >
-          <span className="inline-flex w-max items-center rounded-xl border-2 border-[#16131F] bg-white px-3 py-2 text-sm font-bold text-[#16131F] opacity-80">
-            Start → (soon)
-          </span>
+          <Link
+            href="/chat"
+            className={`${buttonClass("secondary", "sm")} w-max !bg-white !text-[#16131F]`}
+          >
+            Start →
+          </Link>
         </Tile>
         <Tile
           color="zest"

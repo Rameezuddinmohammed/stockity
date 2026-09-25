@@ -1,6 +1,17 @@
-import { and, eq, lt, ne } from "drizzle-orm";
+import { and, eq, inArray, isNull, lt, ne } from "drizzle-orm";
 import type { Ctx } from "../context";
-import { adminActions, domainRequests, otpCodes, sessions, users } from "../db/schema";
+import {
+  adminActions,
+  calls,
+  domainRequests,
+  moderationEvents,
+  otpCodes,
+  reportEvidence,
+  reports,
+  sessions,
+  userNotices,
+  users,
+} from "../db/schema";
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -13,6 +24,11 @@ export const RETENTION = {
   unfinishedSignupDays: 30,
   reviewedRequestDays: 180,
   auditLogDays: 730,
+  /** Report frames and chat excerpts. */
+  reportEvidenceDays: 30,
+  /** Call metadata (who, when, how it ended) and automated moderation signals. */
+  callsDays: 90,
+  seenNoticesDays: 90,
 } as const;
 
 export async function runCleanup(ctx: Ctx) {
@@ -47,7 +63,46 @@ export async function runCleanup(ctx: Ctx) {
     .where(lt(adminActions.createdAt, ago(RETENTION.auditLogDays)))
     .returning({ id: adminActions.id });
 
+  const expiredReports = await ctx.db
+    .update(reports)
+    .set({ chatExcerpt: null, evidenceClearedAt: new Date(now) })
+    .where(
+      and(
+        isNull(reports.evidenceClearedAt),
+        lt(reports.createdAt, ago(RETENTION.reportEvidenceDays)),
+      ),
+    )
+    .returning({ id: reports.id });
+  const evidence =
+    expiredReports.length === 0
+      ? []
+      : await ctx.db
+          .delete(reportEvidence)
+          .where(
+            inArray(
+              reportEvidence.reportId,
+              expiredReports.map((r) => r.id),
+            ),
+          )
+          .returning({ id: reportEvidence.reportId });
+  const oldCalls = await ctx.db
+    .delete(calls)
+    .where(lt(calls.startedAt, ago(RETENTION.callsDays)))
+    .returning({ id: calls.id });
+  const oldSignals = await ctx.db
+    .delete(moderationEvents)
+    .where(lt(moderationEvents.createdAt, ago(RETENTION.callsDays)))
+    .returning({ id: moderationEvents.id });
+  const oldNotices = await ctx.db
+    .delete(userNotices)
+    .where(lt(userNotices.seenAt, ago(RETENTION.seenNoticesDays)))
+    .returning({ id: userNotices.id });
+
   return {
+    reportEvidence: evidence.length,
+    calls: oldCalls.length,
+    moderationEvents: oldSignals.length,
+    userNotices: oldNotices.length,
     otpCodes: otps.length,
     sessions: expiredSessions.length,
     unfinishedSignups: unfinished.length,

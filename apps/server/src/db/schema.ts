@@ -1,11 +1,15 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
+  customType,
   date,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
+  real,
   smallint,
   text,
   timestamp,
@@ -64,6 +68,8 @@ export const users = pgTable(
     verifiedAt: timestamp("verified_at", { withTimezone: true }).notNull(),
     verificationExpiresAt: timestamp("verification_expires_at", { withTimezone: true }).notNull(),
     lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
+    /** Confirmed rule breaks; drives the warning → 24h → 7d → ban ladder. */
+    strikeCount: integer("strike_count").notNull().default(0),
     createdAt: createdAt(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -185,4 +191,132 @@ export const surveyResponses = pgTable("survey_responses", {
   freeHoursUtc: smallint("free_hours_utc").array().notNull().default(sql`'{}'::smallint[]`),
   timezone: text("timezone"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
+
+export const callMode = pgEnum("call_mode", ["video", "text"]);
+export const reportStatus = pgEnum("report_status", ["open", "actioned", "dismissed"]);
+
+/** One random chat. Content is never stored here, only who, when and how it ended. */
+export const calls = pgTable(
+  "calls",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userA: uuid("user_a").references(() => users.id, { onDelete: "set null" }),
+    userB: uuid("user_b").references(() => users.id, { onDelete: "set null" }),
+    mode: callMode("mode").notNull(),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
+    endedBy: uuid("ended_by"),
+    endReason: text("end_reason"),
+  },
+  (t) => [index("calls_started_idx").on(t.startedAt)],
+);
+
+export const blocks = pgTable(
+  "blocks",
+  {
+    blockerId: uuid("blocker_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    blockedId: uuid("blocked_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.blockerId, t.blockedId] }),
+    index("blocks_blocked_idx").on(t.blockedId),
+  ],
+);
+
+export type ChatExcerptLine = { from: "reporter" | "reported"; text: string; at: string };
+
+export const reports = pgTable(
+  "reports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    callId: uuid("call_id").references(() => calls.id, { onDelete: "set null" }),
+    reporterId: uuid("reporter_id").references(() => users.id, { onDelete: "set null" }),
+    reportedId: uuid("reported_id").references(() => users.id, { onDelete: "cascade" }),
+    category: text("category").notNull(),
+    note: text("note"),
+    /** Last messages of the chat at report time; cleared after 30 days. */
+    chatExcerpt: jsonb("chat_excerpt").$type<ChatExcerptLine[]>(),
+    /** True when the report was raised automatically (e.g. repeated nudity flags). */
+    automatic: boolean("automatic").notNull().default(false),
+    status: reportStatus("status").notNull().default("open"),
+    action: text("action"),
+    reviewerId: uuid("reviewer_id").references(() => users.id, { onDelete: "set null" }),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    evidenceClearedAt: timestamp("evidence_cleared_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("reports_status_idx").on(t.status, t.createdAt),
+    index("reports_reported_idx").on(t.reportedId),
+  ],
+);
+
+/** Still frame captured by the reporter's device at report time. Deleted after 30 days. */
+export const reportEvidence = pgTable("report_evidence", {
+  reportId: uuid("report_id")
+    .primaryKey()
+    .references(() => reports.id, { onDelete: "cascade" }),
+  mime: text("mime").notNull(),
+  frame: bytea("frame").notNull(),
+  createdAt: createdAt(),
+});
+
+/** Signals from automated checks, e.g. a viewer's device flagging nudity in the video it receives. */
+export const moderationEvents = pgTable(
+  "moderation_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    subjectId: uuid("subject_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    observerId: uuid("observer_id").references(() => users.id, { onDelete: "set null" }),
+    callId: uuid("call_id").references(() => calls.id, { onDelete: "set null" }),
+    kind: text("kind").notNull(),
+    score: real("score"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("moderation_events_subject_idx").on(t.subjectId, t.createdAt)],
+);
+
+/** Messages for a user from the safety team (warnings, suspensions), shown until acknowledged. */
+export const userNotices = pgTable(
+  "user_notices",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    message: text("message").notNull(),
+    seenAt: timestamp("seen_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("user_notices_user_idx").on(t.userId)],
+);
+
+/** Hashed device cookies seen per account, so bans can also cover the devices used. */
+export const userDevices = pgTable(
+  "user_devices",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    deviceHash: text("device_hash").notNull(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.deviceHash] })],
+);
+
+export const bannedDevices = pgTable("banned_devices", {
+  deviceHash: text("device_hash").primaryKey(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+  createdAt: createdAt(),
 });
