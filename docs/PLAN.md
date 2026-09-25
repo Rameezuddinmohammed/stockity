@@ -184,3 +184,48 @@ Start with a simple queue. Add weighting by interests and language later.
 - LiveKit Cloud (faster to ship) or self-hosted SFU/coturn (cheaper at scale)?
 - Budget for moderation APIs and a KYC vendor.
 - Launch region: which universities go first?
+
+---
+
+## 9. Zero-budget version (domain + one server only)
+
+The goal is to pay only for a domain (~$10–15/year) and one small server (~$0–6/month). Everything else runs on free tiers or free open-source tools.
+**Free-tier limits change often. Check each provider's current pricing page before relying on it.**
+
+| Need | Paid choice (above) | Free / near-free choice |
+|---|---|---|
+| Video | LiveKit Cloud | Direct browser-to-browser WebRTC + your own **coturn** relay server on the VPS |
+| API + realtime + Redis + Postgres | Separate managed services | **All on one VPS** with Docker Compose (Oracle Cloud Always Free ARM VM, or Hetzner at ~€4–6/mo with lots of included traffic) |
+| Web frontend | Vercel | **Cloudflare Pages** (free, allows commercial use; Vercel's free Hobby plan is non-commercial only) |
+| OTP email | Postmark/SES | **Resend** or **Brevo** free tier (a few thousand emails/month is plenty at launch) |
+| ID image storage | S3 | **Cloudflare R2** free tier, or local disk on the VPS; images are deleted after review anyway |
+| NSFW video detection | Hive/Sightengine | **NSFWJS** running in the browser (free) + reports |
+| Text moderation | Paid API | Word-list filter + block links/phone numbers early in a chat (+ OpenAI's moderation endpoint if it's still free for API users) |
+| ID verification | KYC vendor | **Manual review by you** in the admin panel. Or skip ID sign-up at launch and allow college email only |
+| DNS / SSL / DDoS protection | n/a | **Cloudflare** free plan + Caddy (automatic HTTPS) |
+
+### Key trade-offs
+- **Video bandwidth is the real cost.** Relaying video through your server protects IPs but uses your bandwidth. At ~500 kbps per direction (480p, which is fine for casual chat), one hour of relayed call ≈ 0.5–1 GB of server traffic. A server with 10–20 TB/month of included traffic covers roughly 10,000+ call-hours.
+- **While small:** force all video through the relay (`iceTransportPolicy: "relay"`). That hides IPs, and you have bandwidth to spare.
+- **If you outgrow it:** switch to direct connections first, with the relay only as a fallback. This cuts relay traffic by ~80%, but users can see each other's IP (usually the campus or ISP network, not a home address). Or add a second cheap server.
+- **University Wi-Fi often blocks direct connections**, so you need your own relay (TURN) server either way. Run coturn on port 443 over TLS so calls get through strict firewalls.
+- **No server-side frame scanning:** moderation relies on the in-browser NSFW detector, one-tap reports, and verified identity. That's acceptable at small scale.
+- **One server = a single point of failure.** Take daily `pg_dump` backups to R2 or free object storage.
+
+### Minimal setup
+```
+Cloudflare (DNS, proxy, Pages → Next.js static/SPA frontend)
+        │
+        ▼
+One VPS (Docker Compose)
+  ├─ Caddy          (HTTPS, reverse proxy)
+  ├─ api + realtime (Node/TS, one process at first)
+  ├─ postgres
+  ├─ redis
+  └─ coturn         (TURN relay, ports 3478 + 443/TLS)
+```
+
+### Things that are free but cost your time
+- Reviewing ID submissions and reports yourself.
+- Writing ToS/Privacy Policy (use free generators and plain language; still get a lawyer's review before a big launch).
+- Growth: campus ambassadors, Reddit/Discord communities, Instagram reels, scheduled "global hour" events.
