@@ -229,3 +229,33 @@ One VPS (Docker Compose)
 - Reviewing ID submissions and reports yourself.
 - Writing ToS/Privacy Policy (use free generators and plain language; still get a lawyer's review before a big launch).
 - Growth: campus ambassadors, Reddit/Discord communities, Instagram reels, scheduled "global hour" events.
+
+---
+
+## 10. Activities: technical plan (games & cinema)
+
+See `BUSINESS.md` §4–5 for why these exist and for the legal limits.
+
+### Game engine (Quick Play + Tables)
+- **The server decides the game state.** The game state lives on the realtime server, and dice rolls and card shuffles are done there, so players can't cheat. Clients only send moves; the server checks each move and broadcasts the new state over the same WebSocket.
+- **Library:** `boardgame.io` (MIT; turn-based, lobbies, and turn/phase handling built in) or `Colyseus` (MIT; room-based multiplayer). Either runs on the single VPS.
+- **Only turn-based games.** They're cheap to run, and lag doesn't matter.
+- Quick Play games run inside the existing chat session. Game state is attached to the session.
+- Table data: `tables (id, game, host_id, max_players, visibility(public|friends), status)`, `table_players`.
+- Starting games: tic-tac-toe, four-in-a-row, chess (use `chess.js`), trivia (your own question bank), would-you-rather, two truths and a lie, draw-and-guess (canvas strokes sent over WebSocket), Ludo, a crazy-eights-style card game (own name and artwork), Mafia/Werewolf.
+
+### Group audio/video in Tables
+- ≤4 players: peer-to-peer mesh through your coturn relay, voice first, with small low-resolution video tiles (e.g. 160–240p at ~150 kbps).
+- 5–6 players: voice only. Or add a self-hosted LiveKit SFU once there's budget.
+
+### Cinema
+- **Playback sync, not streaming:** each viewer plays the video themselves (YouTube IFrame API, or an HTML5 `<video>` for public-domain or Creative Commons files hosted on Internet Archive or R2). The server only sends play/pause/seek commands and a reference clock. Each client corrects drift above ~0.5 seconds. **No movie ever passes through your server.**
+- **Legal content only:** YouTube embeds, public-domain films, Creative Commons films, and films submitted by student or indie filmmakers with permission. Never screen-share or re-stream movies you don't have rights to.
+- **Rooms:** scheduled `screenings (id, title, source_type, source_ref, starts_at, capacity, host_id)`, `seats (screening_id, seat_no, user_id)` with a seat map, and reservations held in Redis with a TTL and then confirmed in Postgres.
+- **Social layer:** text chat and emoji reactions for the whole room (rate-limited and filtered). Optional voice/video with your **row** (≤4 people, peer-to-peer mesh). Host controls: pause, kick, slow mode.
+
+### Updated roadmap
+- **Phase 1 (MVP):** add Quick Play (tic-tac-toe, would-you-rather, trivia) inside Just Chat.
+- **Phase 2:** Cinema v1 (YouTube/public-domain sync, seat reservation, room chat), plus scheduled Global Hour.
+- **Phase 3:** Tables (Ludo → card game → Mafia/Werewolf → trivia nights), clubs/events, and cosmetics.
+
