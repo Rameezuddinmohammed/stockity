@@ -32,6 +32,8 @@ export type Me = {
     avatarColor: AvatarColor;
   } | null;
   socials: { platform: SocialPlatform; handle: string }[];
+  /** Unacknowledged messages from the safety team. */
+  notices: { id: string; kind: string; message: string; createdAt: string }[];
 };
 
 export type OtpRequestResponse = { ok: true; university: University; resendInSeconds: number };
@@ -60,7 +62,13 @@ export type DomainRequestRow = {
   createdAt: string;
 };
 
-export type PublicStats = { students: number; universities: number; countries: number };
+export type PublicStats = {
+  students: number;
+  universities: number;
+  countries: number;
+  /** Students connected to Quad right now. */
+  online: number;
+};
 
 export type AllowedDomainRow = {
   domain: string;
@@ -87,4 +95,29 @@ export type SurveyResults = {
   modes: Record<SurveyMode, number>;
   /** Index = UTC hour (0–23), value = how many people said they're free then. */
   hoursUtc: number[];
+};
+
+export type AdminReportRow = {
+  id: string;
+  category: string;
+  note: string | null;
+  automatic: boolean;
+  status: "open" | "actioned" | "dismissed";
+  action: string | null;
+  createdAt: string;
+  callMode: "video" | "text" | null;
+  callStartedAt: string | null;
+  hasFrame: boolean;
+  chatExcerpt: { from: "reporter" | "reported"; text: string; at: string }[] | null;
+  reporter: { id: string; email: string; displayName: string | null } | null;
+  reported: {
+    id: string;
+    email: string;
+    displayName: string | null;
+    university: string;
+    status: UserStatus;
+    strikeCount: number;
+    reportsTotal: number;
+    nsfwFlags30d: number;
+  } | null;
 };

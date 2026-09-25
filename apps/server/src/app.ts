@@ -1,14 +1,18 @@
 import cookie from "@fastify/cookie";
+import websocket from "@fastify/websocket";
 import type { ApiError } from "@quad/shared";
 import Fastify from "fastify";
 import { registerAuth } from "./auth";
 import type { Ctx } from "./context";
 import { AppError } from "./lib/errors";
+import { Hub } from "./realtime/hub";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
 import { domainRequestRoutes } from "./routes/domain-requests";
 import { meRoutes } from "./routes/me";
+import { reportRoutes } from "./routes/reports";
 import { statsRoutes } from "./routes/stats";
+import { registerDevices } from "./safety/devices";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -33,7 +37,13 @@ export async function buildApp(ctx: Ctx, opts: { logger?: boolean } = {}) {
   });
 
   await app.register(cookie);
+  await app.register(websocket, { options: { maxPayload: 256 * 1024 } });
   registerAuth(app, ctx);
+  registerDevices(app, ctx);
+
+  const hub = new Hub(ctx, app.log);
+  hub.start();
+  app.addHook("onClose", () => hub.stop());
 
   app.setErrorHandler((err, req, reply) => {
     if (err instanceof AppError) {
@@ -57,11 +67,18 @@ export async function buildApp(ctx: Ctx, opts: { logger?: boolean } = {}) {
   );
 
   app.get("/api/health", async () => ({ ok: true }));
-  authRoutes(app, ctx);
-  meRoutes(app, ctx);
+  app.get("/api/ws", { websocket: true }, (socket, req) => {
+    hub.accept(socket, req).catch((err) => {
+      req.log.error({ err }, "websocket accept failed");
+      socket.close(1011, "server error");
+    });
+  });
+  authRoutes(app, ctx, hub);
+  meRoutes(app, ctx, hub);
   domainRequestRoutes(app, ctx);
-  adminRoutes(app, ctx);
+  adminRoutes(app, ctx, hub);
+  reportRoutes(app, ctx, hub);
   statsRoutes(app, ctx);
 
-  return app;
+  return Object.assign(app, { hub });
 }

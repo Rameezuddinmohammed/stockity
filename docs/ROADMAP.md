@@ -76,29 +76,30 @@ Phase 6  Growth + monetization        month 6+
 **Goal:** safe random 1:1 video and text chat. This is the core of the product.
 
 **Matchmaking and realtime (weeks 5–6)**
-- [ ] WebSocket server with a session-authenticated connection, heartbeat, and presence in Redis
-- [ ] Queue: join with a mode (video / text-only). Atomic pairing via a Redis Lua script
-- [ ] Don't re-match people who met recently, never match people who blocked each other, and don't match anyone already in a call
-- [ ] Session lifecycle: matched → connected → ended (by next / end / disconnect / report), logged to `sessions`
-- [ ] Live "N students online" counter
+- [x] WebSocket server with a session-authenticated connection, heartbeat, and presence in Redis
+- [x] Queue: join with a mode (video / text-only). Atomic pairing via a Redis Lua script
+- [x] Don't re-match people who met recently, never match people who blocked each other, and don't match anyone already in a call
+- [x] Session lifecycle: matched → connected → ended (by next / end / disconnect / report), logged to `calls` (no content)
+- [x] Live "N students online" counter
 
 **Video and chat (weeks 6–7)**
-- [ ] WebRTC connection setup over the WebSocket; coturn issues short-lived credentials
-- [ ] `iceTransportPolicy: "relay"` so video always goes through the relay and IP addresses stay hidden. coturn also listens on 443/TLS to get through strict campus Wi-Fi
-- [ ] Video capped at ~480p / 500 kbps; mute and camera toggles; text-only mode
-- [ ] Text chat next to the video, plus typing indicator
-- [ ] Next / End controls; auto-requeue on Next
-- [ ] Pre-call screen: camera preview and permissions check, plus a reminder of the guidelines
+- [x] WebRTC connection setup over the WebSocket; coturn issues short-lived credentials
+- [x] `iceTransportPolicy: "relay"` so video always goes through the relay and IP addresses stay hidden
+- [ ] TURN over TLS on 443 for strict campus Wi-Fi (needs a second IP; add when students hit it)
+- [x] Video capped at ~480p / 500 kbps; mute and camera toggles; text-only mode
+- [x] Text chat next to the video, plus typing indicator
+- [x] Next / End controls; auto-requeue on Next
+- [x] Pre-call screen: camera preview and permissions check, plus a reminder of the guidelines
 
 **Safety (weeks 7–8), required before any real users**
-- [ ] Report (with categories): ends the call, blurs video right away, captures a frame and chat excerpt as evidence
-- [ ] Block: never matched again
-- [ ] NSFWJS runs on the **incoming** video in the browser. Blur when flagged, then log the event to the server
-- [ ] Text filter: word list; block links and phone numbers in the first 5 minutes
-- [ ] Strikes: warning → 24-hour suspension → 7-day suspension → permanent ban, applied to the account and a device fingerprint
-- [ ] Rate limits on how often users can skip and report
-- [ ] Admin panel v1: report queue with evidence, one-click actions, user history
-- [ ] Evidence is deleted automatically after 30 days; there are no call recordings at all
+- [x] Report (with categories): ends the call, blurs video right away, captures a frame and chat excerpt as evidence
+- [x] Block: never matched again
+- [x] NSFWJS runs on the **incoming** video in the browser. Blur when flagged, then log the event to the server. Flags from 3 different people in 24h auto-suspend for 24h and open an automatic report
+- [x] Text filter: slurs and sexual terms masked (everyday swearing allowed); links, emails, handles and phone numbers held back for the first 5 minutes
+- [x] Strikes: warning → 24-hour suspension → 7-day suspension → permanent ban, applied to the account and a device fingerprint
+- [x] Rate limits on how often users can skip and report
+- [x] Admin panel v1: report queue with evidence, one-click actions, user history
+- [x] Evidence is deleted automatically after 30 days; there are no call recordings at all
 
 **Gate → Phase 3:** 20 internal testers do 1 week of daily use. There is no crash-level bug. Reports reach the admin panel within 1 minute. **The chat has to feel safe to women testers. Ask them directly.**
 

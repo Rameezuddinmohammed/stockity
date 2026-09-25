@@ -6,14 +6,24 @@ Sign-in is by college email (6-digit code); every account is tied to a real univ
 Planning docs live in [`docs/`](docs):
 [PLAN](docs/PLAN.md) · [ROADMAP](docs/ROADMAP.md) · [BUSINESS](docs/BUSINESS.md) · [DESIGN](docs/DESIGN.md) · [DEPLOY](docs/DEPLOY.md) · [design preview](docs/design/preview.html)
 
-## What's built (Phase 0 + Phase 1)
+## What's built (Phases 0–2)
 
 - College-email sign-in with one-time codes, matched against 10,000+ university domains (subdomains included), with alumni and disposable emails rejected
 - "My university isn't listed" requests, reviewed by admins
 - 18+ gate: under-18 accounts are deleted and the email is blocked (stored only as a hash)
 - Onboarding (name, date of birth, the three-rule "vibe check"), profile card editor, private socials
 - Sessions in httpOnly cookies with sign-out-everywhere; CSRF origin check; Redis rate limits
-- Admin panel: university requests, allowlisted domains, individually approved emails, user search, suspend/ban/reinstate, survey results, with an audit log
+- **Just Chat** at `/chat`: random 1:1 video + text between verified students.
+  - Matching is done in Redis, so two people are never claimed at once. Blocked pairs and the person you just skipped aren't matched.
+  - WebRTC video goes through a TURN relay, so nobody sees another person's IP address.
+  - Chat has a typing indicator and icebreakers. Links unlock after 5 minutes, and slurs are masked.
+  - Safety:
+    - one-tap Report, which blurs the video and saves a frame plus the chat excerpt as evidence
+    - Block
+    - an in-browser nudity blur
+    - a strike ladder with automatic suspension
+    - device bans
+- Admin panel: a report queue with evidence, allowlisted domains, individually approved emails, user search, suspend/ban/reinstate, survey results, with an audit log
 - Demand survey on Home (which modes, when people are free) to pick what launches first and when Global Hour runs
 - Draft [Terms](apps/web/content/legal/terms.md) and [Privacy Policy](apps/web/content/legal/privacy.md) at `/terms` and `/privacy`, plus an hourly retention cleanup that enforces the policy's deletion periods
 - The Quad design system (`packages/ui`) implementing [DESIGN.md](docs/DESIGN.md), previewed at `/styleguide`

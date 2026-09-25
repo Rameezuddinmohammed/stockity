@@ -10,16 +10,25 @@ import {
   socialsSchema,
   surveySchema,
 } from "@quad/shared";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 import { clearSessionCookie, requireActive, requireUser } from "../auth";
 import type { Ctx } from "../context";
-import { blockedEmails, profiles, socials, surveyResponses, users } from "../db/schema";
+import {
+  blockedEmails,
+  profiles,
+  socials,
+  surveyResponses,
+  userNotices,
+  users,
+} from "../db/schema";
 import { AppError, parse } from "../lib/errors";
 import { avatarColorFor, loadMe } from "../lib/users";
+import type { Hub } from "../realtime/hub";
 import { blockedHash } from "./auth";
 
-export function meRoutes(app: FastifyInstance, ctx: Ctx) {
+export function meRoutes(app: FastifyInstance, ctx: Ctx, hub: Hub) {
   app.get("/api/me", async (req): Promise<Me> => {
     const { user } = requireUser(req);
     return loadMe(ctx.db, user.id);
@@ -119,6 +128,16 @@ export function meRoutes(app: FastifyInstance, ctx: Ctx) {
     return { answers: { ...values } };
   });
 
+  app.post("/api/me/notices/:id/seen", async (req): Promise<Me> => {
+    const { user } = requireUser(req);
+    const { id } = parse(z.object({ id: z.uuid() }), req.params);
+    await ctx.db
+      .update(userNotices)
+      .set({ seenAt: ctx.now() })
+      .where(and(eq(userNotices.id, id), eq(userNotices.userId, user.id)));
+    return loadMe(ctx.db, user.id);
+  });
+
   app.delete("/api/me", async (req, reply) => {
     const { user } = requireUser(req);
     if (user.status === "suspended") {
@@ -128,6 +147,7 @@ export function meRoutes(app: FastifyInstance, ctx: Ctx) {
         "You can delete your account once your suspension ends.",
       );
     }
+    hub.kick(user.id, "signed_out");
     await ctx.db.delete(users).where(eq(users.id, user.id));
     clearSessionCookie(ctx, reply);
     return { ok: true };

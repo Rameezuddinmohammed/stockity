@@ -39,6 +39,8 @@ services:
       MAIL_PROVIDER: ${MAIL_PROVIDER:-console}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       MAIL_FROM: ${MAIL_FROM}
+      TURN_SECRET: ${TURN_SECRET}
+      TURN_URLS: turn:${TURN_HOST}:3478?transport=udp,turn:${TURN_HOST}:3478?transport=tcp
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -93,7 +95,39 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
 
-  # Phase 2: TURN relay for video calls (coturn) gets added here.
+  # TURN relay for video calls. All call media goes through here (ICE policy "relay"),
+  # so students never see each other's IP address. Host networking avoids Docker NAT on
+  # the big UDP port range. Credentials are short-lived HMACs issued by the API.
+  coturn:
+    image: coturn/coturn:4.6-alpine
+    restart: unless-stopped
+    network_mode: host
+    # Run turnserver directly: the image's default entrypoint re-evaluates every argument.
+    entrypoint: ["turnserver"]
+    command:
+      - -n
+      - --log-file=stdout
+      - --listening-port=3478
+      - --fingerprint
+      - --use-auth-secret
+      - --static-auth-secret=${TURN_SECRET}
+      - --realm=quad
+      - --external-ip=${PUBLIC_IP}
+      - --min-port=49160
+      - --max-port=49660
+      - --user-quota=6
+      - --no-cli
+      - --no-multicast-peers
+      - --no-tlsv1
+      - --no-tlsv1_1
+      # Never relay into private networks (stops people probing your server's internals).
+      - --denied-peer-ip=0.0.0.0-0.255.255.255
+      - --denied-peer-ip=10.0.0.0-10.255.255.255
+      - --denied-peer-ip=100.64.0.0-100.127.255.255
+      - --denied-peer-ip=127.0.0.0-127.255.255.255
+      - --denied-peer-ip=169.254.0.0-169.254.255.255
+      - --denied-peer-ip=172.16.0.0-172.31.255.255
+      - --denied-peer-ip=192.168.0.0-192.168.255.255
 
 volumes:
   caddy_data:

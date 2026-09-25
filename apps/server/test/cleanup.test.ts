@@ -18,6 +18,10 @@ describe("retention cleanup", () => {
     await h.signUp("riya@iitb.ac.in");
     await h.signIn("pending@mit.edu");
     expect(await runCleanup(h.ctx)).toEqual({
+      reportEvidence: 0,
+      calls: 0,
+      moderationEvents: 0,
+      userNotices: 0,
       otpCodes: 0,
       sessions: 0,
       unfinishedSignups: 0,

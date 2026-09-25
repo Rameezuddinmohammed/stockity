@@ -24,6 +24,29 @@ const envSchema = z.object({
   MAIL_PROVIDER: z.enum(["console", "resend"]).default("console"),
   RESEND_API_KEY: z.string().optional(),
   MAIL_FROM: z.string().default("Quad <hello@example.com>"),
+  /** coturn `static-auth-secret`. Without it calls fall back to direct connections (dev only). */
+  TURN_SECRET: z.string().optional(),
+  /** Comma-separated, e.g. "turn:turn.quad.example:3478?transport=udp,turn:turn.quad.example:3478?transport=tcp" */
+  TURN_URLS: z
+    .string()
+    .default("")
+    .transform((v) =>
+      v
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
+  STUN_URLS: z
+    .string()
+    .default("")
+    .transform((v) =>
+      v
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
+  /** "relay" hides both people's IP addresses from each other (the default whenever TURN is set up). */
+  ICE_POLICY: z.enum(["relay", "all"]).optional(),
 });
 
 export type Config = z.infer<typeof envSchema>;

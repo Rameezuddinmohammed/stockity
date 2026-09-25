@@ -134,7 +134,7 @@ describe("stats", () => {
     await h.signUp("kenji@kyoto-u.ac.jp", "Kenji");
     await h.signIn("pending@mit.edu");
     const res = await h.get("/api/stats");
-    expect(res.json()).toEqual({ students: 2, universities: 2, countries: 2 });
+    expect(res.json()).toEqual({ students: 2, universities: 2, countries: 2, online: 0 });
   });
 });
 
