@@ -1,0 +1,22 @@
+# DOMAIN is e.g. "quad.example" (automatic HTTPS) or ":80" to test by IP before DNS exists.
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(self), microphone=(self), geolocation=(), payment=()"
+		-Server
+	}
+
+	# The API gets the real client IP via X-Forwarded-For (server runs with TRUST_PROXY=true).
+	handle /api/* {
+		reverse_proxy server:4000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}

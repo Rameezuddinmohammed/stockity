@@ -1,0 +1,44 @@
+[
+  {
+    "name": "University of Toronto",
+    "country": "Canada",
+    "alpha_two_code": "CA",
+    "domains": ["utoronto.ca", "mail.utoronto.ca"],
+    "web_pages": ["https://www.utoronto.ca/"]
+  },
+  {
+    "name": "Indian Institute of Technology Bombay",
+    "country": "India",
+    "alpha_two_code": "IN",
+    "domains": ["iitb.ac.in"],
+    "web_pages": ["https://www.iitb.ac.in/"]
+  },
+  {
+    "name": "University of Nairobi",
+    "country": "Kenya",
+    "alpha_two_code": "KE",
+    "domains": ["uonbi.ac.ke", "students.uonbi.ac.ke"],
+    "web_pages": ["https://www.uonbi.ac.ke/"]
+  },
+  {
+    "name": "Kyoto University",
+    "country": "Japan",
+    "alpha_two_code": "JP",
+    "domains": ["kyoto-u.ac.jp"],
+    "web_pages": ["https://www.kyoto-u.ac.jp/"]
+  },
+  {
+    "name": "Massachusetts Institute of Technology",
+    "country": "United States",
+    "alpha_two_code": "US",
+    "domains": ["mit.edu"],
+    "web_pages": ["https://web.mit.edu/"]
+  },
+  {
+    "name": "University of Oxford",
+    "country": "United Kingdom",
+    "alpha_two_code": "GB",
+    "domains": ["ox.ac.uk"],
+    "web_pages": ["https://www.ox.ac.uk/"]
+  }
+]
