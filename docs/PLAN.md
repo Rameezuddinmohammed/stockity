@@ -138,33 +138,7 @@ Start with a simple queue. Add weighting by interests and language later.
 
 ## 6. Phased roadmap
 
-### Phase 0: Foundations (week 1)
-- Monorepo (pnpm + Turborepo): `apps/web`, `apps/api`, `apps/realtime`, `packages/shared`.
-- CI (lint, typecheck, tests), environment setup, Postgres + Redis in Docker Compose for local dev.
-- Seed the university domains list.
-
-### Phase 1: MVP (weeks 2–7)
-- [ ] Email OTP sign-up with the domain allowlist, plus DOB/18+ attestation
-- [ ] ID upload + admin approval queue
-- [ ] Profile setup (name, about, university, interests, socials)
-- [ ] Matchmaking queue (global only), Next / End
-- [ ] LiveKit 1:1 video + text chat in the same view
-- [ ] Report + block, basic admin panel, bans
-- [ ] Client-side NSFW blur
-- [ ] Landing page + waitlist
-
-### Phase 2: Safety and retention (weeks 8–12)
-- [ ] Server-side frame and text moderation, strike system
-- [ ] Filters (country, university, interests, language)
-- [ ] Mutual connect → socials revealed + async DMs
-- [ ] Annual re-verification, device fingerprinting
-- [ ] Analytics (match time, chat length, skip rate, report rate)
-
-### Phase 3: Growth (month 4+)
-- [ ] Mobile apps (Expo)
-- [ ] Scheduled "global hours" to concentrate users (fixes empty queues)
-- [ ] Campus ambassadors, university-specific rooms, events
-- [ ] Monetization (e.g. premium filters, profile boosts). Never charge for safety features.
+See **[`ROADMAP.md`](ROADMAP.md)** for the full phased build plan with gates.
 
 ---
 
@@ -253,9 +227,3 @@ See `BUSINESS.md` §4–5 for why these exist and for the legal limits.
 - **Legal content only:** YouTube embeds, public-domain films, Creative Commons films, and films submitted by student or indie filmmakers with permission. Never screen-share or re-stream movies you don't have rights to.
 - **Rooms:** scheduled `screenings (id, title, source_type, source_ref, starts_at, capacity, host_id)`, `seats (screening_id, seat_no, user_id)` with a seat map, and reservations held in Redis with a TTL and then confirmed in Postgres.
 - **Social layer:** text chat and emoji reactions for the whole room (rate-limited and filtered). Optional voice/video with your **row** (≤4 people, peer-to-peer mesh). Host controls: pause, kick, slow mode.
-
-### Updated roadmap
-- **Phase 1 (MVP):** add Quick Play (tic-tac-toe, would-you-rather, trivia) inside Just Chat.
-- **Phase 2:** Cinema v1 (YouTube/public-domain sync, seat reservation, room chat), plus scheduled Global Hour.
-- **Phase 3:** Tables (Ludo → card game → Mafia/Werewolf → trivia nights), clubs/events, and cosmetics.
-
