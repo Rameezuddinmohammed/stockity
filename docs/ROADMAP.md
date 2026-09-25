@@ -32,6 +32,7 @@ Phase 6  Growth + monetization        month 6+
   apps/web        Next.js + Tailwind (web app + admin panel)
   apps/server     Node/TS: REST API + WebSocket realtime (one process at first)
   packages/shared types, zod schemas, game logic shared by client and server
+  packages/ui     design tokens + components (see DESIGN.md)
   infra/          docker-compose (postgres, redis, coturn, caddy), backup scripts
   docs/
   ```
@@ -41,6 +42,8 @@ Phase 6  Growth + monetization        month 6+
 - [ ] Database schema v1 + migrations (Drizzle or Prisma)
 - [ ] Seed `universities` from `Hipo/university-domains-list` + a disposable-email blocklist
 - [ ] Draft the ToS, Privacy Policy and Community Guidelines (free generators, plain language)
+- [ ] **Design system foundation** (`packages/ui`, see `DESIGN.md`): tokens (light/dark/calm) in CSS variables + Tailwind v4, fonts, restyled shadcn/ui primitives, and core components (Button, Chip, Sticker, Tile, ID card, Sheet, Toast, OTP input) with a Ladle preview
+- [ ] Landing page built on the design system (it's the first real test of the look)
 
 **Gate → Phase 1:** repo, CI and server are live. The waitlist is growing, with a target of **300+ sign-ups across 3–5 campuses** by the end of Phase 2.
 
