@@ -1,6 +1,6 @@
 "use client";
 
-import type { CallMode, PeerCard, ReportCategory, ServerMessage } from "@quad/shared";
+import type { BotScene, CallMode, PeerCard, ReportCategory, ServerMessage } from "@quad/shared";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { watchForNudity } from "@/lib/nsfw";
@@ -33,6 +33,9 @@ type State = {
   blurred: boolean;
   toast: string | null;
   kicked: "suspended" | "banned" | "signed_out" | "replaced" | null;
+  /** What Quad Bot's camera shows; the key re-triggers the same scene. */
+  botScene: BotScene | null;
+  botSceneKey: number;
 };
 
 type Action =
@@ -56,6 +59,8 @@ const initial: State = {
   blurred: false,
   toast: null,
   kicked: null,
+  botScene: null,
+  botSceneKey: 0,
 };
 
 function reducer(state: State, action: Action): State {
@@ -148,9 +153,11 @@ export function useChat() {
             peer: msg.peer,
             lines: [],
             linksUnlockAt: Date.parse(msg.linksUnlockAt),
-            connection: msg.mode === "video" ? "new" : "none",
+            connection: msg.mode === "video" && !msg.peer.bot ? "new" : "none",
+            botScene: null,
           });
-          if (msg.mode === "video") {
+          // Quad Bot has no camera or WebRTC connection; its "video" is drawn locally.
+          if (msg.mode === "video" && !msg.peer.bot) {
             const p = new Peer(
               msg.ice,
               msg.role,
@@ -209,6 +216,9 @@ export function useChat() {
           }
           return;
         }
+        case "bot.scene":
+          set({ botScene: msg.scene, botSceneKey: s.botSceneKey + 1 });
+          return;
         case "report.received":
           set({ phase: "reported", peer: null });
           return;
@@ -286,6 +296,11 @@ export function useChat() {
     },
     localStream: () => local.current,
     start: join,
+    /** Practice chat with Quad Bot (instant, clearly labelled). */
+    startBot() {
+      set({ phase: "waiting", lines: [], peer: null });
+      client.current?.send({ t: "bot.start", mode: stateRef.current.mode });
+    },
     cancel() {
       client.current?.send({ t: "queue.leave" });
       set({ phase: "setup" });

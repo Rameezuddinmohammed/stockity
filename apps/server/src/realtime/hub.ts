@@ -31,6 +31,7 @@ import {
 import { AppError } from "../lib/errors";
 import { enforce as enforceRateLimit } from "../lib/rate-limit";
 import { enforce, type Kicker } from "../safety/enforce";
+import { BOT_CARD, BOT_ID, type BotReply, botOpener, botReply, botTypingMs } from "./bot";
 import { censorText, containsContactInfo } from "./filter";
 import { Matchmaker } from "./matchmaker";
 import { dropPresence, onlineCount, touchPresence } from "./presence";
@@ -62,6 +63,8 @@ type Call = {
   /** Kept in memory only, so a report can include context. Never written to the database otherwise. */
   messages: ChatLine[];
   nsfwFlaggedBy: Set<string>;
+  /** Present when the partner is Quad Bot (no second person, no WebRTC). */
+  bot?: { timers: NodeJS.Timeout[]; rickrolled: boolean };
 };
 
 const SWEEP_MS = 2_000;
@@ -232,6 +235,8 @@ export class Hub implements Kicker {
     switch (msg.t) {
       case "queue.join":
         return this.join(conn, msg.mode);
+      case "bot.start":
+        return this.startBotCall(conn, msg.mode);
       case "queue.leave":
         if (conn.state === "queued") {
           conn.state = "idle";
@@ -262,13 +267,15 @@ export class Hub implements Kicker {
         return;
       case "call.block":
         if (!call) return;
+        if (call.bot) return this.endCall(call, conn.userId, "next");
         await this.block(conn.userId, this.partnerOf(call, conn.userId));
         return this.endCall(call, conn.userId, "blocked");
       case "call.report":
         if (!call) return this.error(conn, "NOT_IN_CALL", "The chat already ended.");
+        if (call.bot) return this.endCall(call, conn.userId, "left");
         return this.report(conn, call, msg);
       case "nsfw.flag":
-        if (call?.mode === "video") await this.nsfwFlag(conn, call, msg.score);
+        if (call?.mode === "video" && !call.bot) await this.nsfwFlag(conn, call, msg.score);
         return;
     }
   }
@@ -378,6 +385,7 @@ export class Hub implements Kicker {
   /** Ends a call for both sides. The other person only learns that the chat ended, never why. */
   private async endCall(call: Call, byUserId: string, reason: EndReason) {
     if (!this.calls.delete(call.id)) return;
+    for (const t of call.bot?.timers ?? []) clearTimeout(t);
     for (const userId of [call.a, call.b]) {
       const conn = this.conns.get(userId);
       if (!conn || conn.callId !== call.id) continue;
@@ -419,6 +427,80 @@ export class Hub implements Kicker {
     if (call.messages.length > KEEP_MESSAGES) call.messages.shift();
     this.relay(call, conn, { t: "chat.msg", id, text, at });
     this.send(conn, { t: "chat.ack", clientId, id, text, at });
+    if (call.bot) this.botSay(call, botReply(text));
+  }
+
+  // ---------- Quad Bot ----------
+
+  /** Starts a practice chat with Quad Bot. It's a separate, clearly-labelled mode, never a stand-in for a student. */
+  private async startBotCall(conn: Conn, mode: CallMode) {
+    if (conn.state === "in_call")
+      return this.error(conn, "IN_CALL", "Leave your current chat first.");
+    if (conn.state === "queued") await this.mm.leave(conn.userId);
+    conn.state = "in_call";
+    const now = this.ctx.now();
+    const [row] = await this.ctx.db
+      .insert(calls)
+      .values({ userA: conn.userId, userB: null, mode, startedAt: now })
+      .returning({ id: calls.id });
+    if (!row) throw new Error("could not create call");
+    const call: Call = {
+      id: row.id,
+      mode,
+      a: conn.userId,
+      b: BOT_ID,
+      linksUnlockAt: now.getTime() + LINK_LOCK_SECONDS * 1000,
+      messages: [],
+      nsfwFlaggedBy: new Set(),
+      bot: { timers: [], rickrolled: false },
+    };
+    this.calls.set(call.id, call);
+    conn.callId = call.id;
+    this.send(conn, {
+      t: "match",
+      callId: call.id,
+      mode,
+      role: "answerer",
+      peer: BOT_CARD,
+      ice: { iceServers: [], iceTransportPolicy: "all" },
+      linksUnlockAt: new Date(call.linksUnlockAt).toISOString(),
+    });
+    this.botSay(call, { text: botOpener(), scene: "robot" });
+    // In video chats, one unprompted rickroll per call. Tradition.
+    if (mode === "video") {
+      call.bot?.timers.push(
+        setTimeout(() => {
+          if (call.bot && !call.bot.rickrolled) {
+            this.botSay(call, {
+              text: "brb, sending you my favourite video 📺",
+              scene: "rickroll",
+            });
+          }
+        }, 45_000),
+      );
+    }
+  }
+
+  /** Shows "typing…", then sends the bot's message (and camera scene) if the chat is still going. */
+  private botSay(call: Call, reply: BotReply) {
+    const bot = call.bot;
+    const conn = this.conns.get(call.a);
+    if (!bot || !conn || conn.callId !== call.id) return;
+    this.send(conn, { t: "chat.typing" });
+    bot.timers.push(
+      setTimeout(() => {
+        const live = this.conns.get(call.a);
+        if (!this.calls.has(call.id) || !live || live.callId !== call.id) return;
+        const at = this.ctx.now().toISOString();
+        call.messages.push({ from: BOT_ID, text: reply.text, at });
+        if (call.messages.length > KEEP_MESSAGES) call.messages.shift();
+        this.send(live, { t: "chat.msg", id: randomUUID(), text: reply.text, at });
+        if (reply.scene) {
+          if (reply.scene === "rickroll") bot.rickrolled = true;
+          this.send(live, { t: "bot.scene", scene: reply.scene });
+        }
+      }, botTypingMs(reply.text)),
+    );
   }
 
   // ---------- safety ----------

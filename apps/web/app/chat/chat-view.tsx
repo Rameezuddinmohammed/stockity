@@ -209,6 +209,9 @@ function Setup({ chat }: { chat: Chat }) {
           <Button variant="primary" block disabled={!canStart} onClick={actions.start}>
             Start →
           </Button>
+          <Button variant="plain" block disabled={!canStart} onClick={actions.startBot}>
+            🤖 Practice with Quad Bot
+          </Button>
         </div>
       </main>
     </>
@@ -236,10 +239,15 @@ function Waiting({ chat }: { chat: Chat }) {
           {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
           {state.online !== null && ` · ${state.online.toLocaleString()} online`}
         </p>
-        {seconds >= 20 && (
-          <p className="text-sm text-muted">
-            Quiet right now. Keep this tab open and we'll match you as soon as someone joins.
-          </p>
+        {seconds >= 15 && (
+          <div className="grid justify-items-center gap-3">
+            <p className="text-sm text-muted">
+              Quiet right now. Keep this tab open and we'll match you as soon as someone joins.
+            </p>
+            <Button variant="plain" size="sm" onClick={actions.startBot}>
+              🤖 Chat with Quad Bot while you wait
+            </Button>
+          </div>
         )}
         <Button onClick={actions.cancel}>Cancel</Button>
       </main>
