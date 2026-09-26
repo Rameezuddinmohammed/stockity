@@ -12,11 +12,21 @@ import ffmpeg from "ffmpeg-static";
 import { chromium } from "playwright";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const args = Object.fromEntries(process.argv.slice(2).join(" ").split("--").filter(Boolean).map((a) => a.trim().split(/\s+/)));
+const args = Object.fromEntries(
+  process.argv
+    .slice(2)
+    .join(" ")
+    .split("--")
+    .filter(Boolean)
+    .map((a) => a.trim().split(/\s+/)),
+);
 const fps = Number(args.fps ?? 30);
 const out = args.out ?? join(here, "quad-trailer.mp4");
 
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
+const browser = await chromium.launch({
+  // biome-ignore lint/suspicious/noUndeclaredEnvVars: optional local override
+  executablePath: process.env.CHROMIUM_PATH || undefined,
+});
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
 await page.goto(`${pathToFileURL(join(here, "index.html"))}?render`);
 await page.evaluate(() => document.fonts.ready);
@@ -35,9 +45,39 @@ const wavPath = join(here, "soundtrack.wav");
 writeFileSync(wavPath, Buffer.from(await page.evaluate(() => window.__renderAudio()), "base64"));
 console.log("soundtrack.wav written");
 
-const ff = spawn(ffmpeg, ["-y", "-f", "image2pipe", "-framerate", String(fps), "-c:v", "mjpeg", "-i", "-", "-i", wavPath,
-  "-c:v", "libx264", "-preset", "slow", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", out],
-  { stdio: ["pipe", "inherit", "inherit"] });
+const ff = spawn(
+  ffmpeg,
+  [
+    "-y",
+    "-f",
+    "image2pipe",
+    "-framerate",
+    String(fps),
+    "-c:v",
+    "mjpeg",
+    "-i",
+    "-",
+    "-i",
+    wavPath,
+    "-c:v",
+    "libx264",
+    "-preset",
+    "slow",
+    "-crf",
+    "18",
+    "-pix_fmt",
+    "yuv420p",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "192k",
+    "-shortest",
+    "-movflags",
+    "+faststart",
+    out,
+  ],
+  { stdio: ["pipe", "inherit", "inherit"] },
+);
 
 const total = Math.round(duration * fps);
 for (let i = 0; i < total; i++) {
