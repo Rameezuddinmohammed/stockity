@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quad Launch Trailer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&family=IBM+Plex+Mono:wght@500;600&display=block" rel="stylesheet">
+<style>
+/* Tokens from docs/DESIGN.md */
+:root {
+  --ink: #16131F; --chalk: #F7F4FF; --night: #120F1C; --surface-d: #1E1A2E; --surface: #FFFFFF;
+  --muted-d: #A8A1BF; --line-d: #EDE8FF; --hairline-d: #3A3450;
+  --grape: #7B5CFF; --grape-strong: #6A45FF; --grape-text-d: #A48BFF;
+  --zest: #D4FF3A; --tang: #FF9142; --gum: #FF5FA2; --sky: #4FC3FF;
+  --danger-d: #FF6B6B; --success-d: #4ADE9A;
+  --holo: conic-gradient(from 200deg, #7B5CFF, #4FC3FF, #D4FF3A, #FF5FA2, #7B5CFF);
+  --display: "Bricolage Grotesque", "Noto Sans", system-ui, sans-serif;
+  --body: "Figtree", "Noto Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; background: #000; overflow: hidden; }
+body { font-family: var(--body); color: var(--chalk); }
+
+#viewport { position: fixed; inset: 0; display: grid; place-items: center; }
+#stage {
+  position: absolute; width: 1920px; height: 1080px; left: 50%; top: 50%;
+  transform-origin: 0 0; overflow: hidden; background: var(--night);
+}
+.grain { position: absolute; inset: 0; pointer-events: none; opacity: .05; z-index: 50;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.scene { position: absolute; inset: 0; display: none; }
+.abs { position: absolute; }
+.center { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+.display { font-family: var(--display); font-weight: 800; letter-spacing: -0.03em; line-height: .95; }
+.mono { font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+.card { background: var(--surface); color: var(--ink); border: 3px solid var(--ink); border-radius: 24px; box-shadow: 8px 8px 0 var(--ink); }
+.card-d { background: var(--surface-d); color: var(--chalk); border: 3px solid var(--line-d); border-radius: 24px; box-shadow: 8px 8px 0 var(--line-d); }
+.sticker { display: inline-block; padding: 10px 22px; border-radius: 999px; background: var(--zest); color: var(--ink);
+  border: 3px solid var(--ink); outline: 6px solid #fff; font-weight: 800; font-family: var(--body); }
+.chip { display: inline-block; padding: 8px 18px; border-radius: 999px; border: 2px solid var(--ink); font-weight: 600; font-size: 24px; background: #fff; color: var(--ink); }
+.btn { display: inline-flex; align-items: center; gap: 14px; padding: 22px 40px; border-radius: 16px; border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink); font-weight: 700; font-size: 36px; background: var(--grape-strong); color: #fff; }
+
+/* Scene 1 */
+#s1 .l1 { top: 330px; left: 0; right: 0; text-align: center; font-size: 64px; color: var(--muted-d); font-family: var(--display); font-weight: 600; }
+#s1 .city { top: 440px; left: 0; right: 0; text-align: center; font-size: 170px; }
+
+/* Scene 2 */
+#s2 .line { top: 390px; left: 0; right: 0; text-align: center; font-size: 96px; }
+#s2 .logo { left: 50%; top: 50%; }
+.logo-box { font-family: var(--display); font-weight: 800; font-size: 260px; letter-spacing: -0.05em; line-height: 1;
+  background: var(--grape-strong); color: #fff; padding: 20px 70px 40px; border: 6px solid var(--ink); border-radius: 48px;
+  box-shadow: 16px 16px 0 var(--line-d); outline: 12px solid #fff; }
+#s2 .tag { top: 800px; left: 0; right: 0; text-align: center; font-size: 72px; }
+
+/* Pip */
+.pip { width: 170px; height: 170px; }
+
+/* Scene 3 */
+#s3 { background: var(--chalk); color: var(--ink); }
+#s3 .hl { left: 140px; top: 130px; font-size: 128px; width: 820px; }
+#s3 .sub { left: 140px; top: 600px; display: flex; flex-direction: column; gap: 22px; }
+#s3 .sub div { font-size: 44px; font-weight: 700; display: flex; align-items: center; gap: 18px; }
+#s3 .sub .n { font-family: var(--mono); font-size: 26px; width: 58px; height: 58px; border-radius: 999px; border: 3px solid var(--ink);
+  display: grid; place-items: center; background: var(--zest); }
+#s3 .form { right: 150px; top: 200px; width: 760px; padding: 50px; }
+#s3 .label { font-family: var(--mono); font-size: 22px; letter-spacing: .08em; color: #5E5873; margin-bottom: 14px; }
+#s3 .input { border: 3px solid var(--ink); border-radius: 16px; font-size: 42px; padding: 20px 26px; height: 94px; font-weight: 600; }
+#s3 .caret { display: inline-block; width: 4px; height: 44px; background: var(--grape-strong); vertical-align: -6px; margin-left: 3px; }
+#s3 .uni { margin-top: 26px; font-size: 36px; font-weight: 700; }
+#s3 .otp { margin-top: 40px; display: flex; gap: 16px; }
+#s3 .otp div { width: 92px; height: 112px; border: 3px solid var(--ink); border-radius: 16px; display: grid; place-items: center;
+  font-family: var(--mono); font-size: 56px; font-weight: 600; background: #fff; }
+#s3 .verified { right: 110px; top: 780px; }
+.holo-sticker { display: inline-flex; align-items: center; gap: 16px; padding: 18px 34px; border-radius: 999px; border: 3px solid var(--ink);
+  outline: 8px solid #fff; background: var(--holo); color: var(--ink); font-size: 44px; font-weight: 800; box-shadow: 8px 8px 0 var(--ink); }
+
+/* Scene 4 */
+#s4a { background: var(--grape-strong); }
+#s4a .find { top: 150px; left: 0; right: 0; text-align: center; font-size: 84px; color: #fff; }
+#s4a .slot { left: 50%; top: 330px; width: 1100px; height: 200px; margin-left: -550px; overflow: hidden; border-radius: 32px;
+  background: var(--ink); border: 6px solid #fff; box-shadow: 12px 12px 0 var(--ink); }
+#s4a .reel { position: absolute; left: 0; right: 0; top: 0; }
+#s4a .reel div { height: 200px; display: flex; align-items: center; justify-content: center; gap: 30px; font-size: 76px; font-family: var(--display); font-weight: 700; color: #fff; }
+#s4a .idcard { left: 50%; top: 590px; width: 780px; height: 420px; margin-left: -390px; padding: 0; overflow: hidden; }
+.id-top { height: 64px; background: var(--grape); border-bottom: 3px solid var(--ink); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; color: #fff; }
+.id-top .mono { font-size: 20px; }
+.id-body { display: flex; gap: 34px; padding: 34px 34px 0; }
+.avatar { width: 170px; height: 170px; border-radius: 999px; border: 3px solid var(--ink); display: grid; place-items: center; font-family: var(--display); font-size: 84px; font-weight: 800; }
+.id-name { font-family: var(--display); font-weight: 800; font-size: 64px; letter-spacing: -0.02em; }
+.id-uni { font-size: 30px; font-weight: 600; margin-top: 6px; }
+.id-course { font-size: 24px; color: #5E5873; margin-top: 4px; }
+.id-chips { display: flex; gap: 10px; margin-top: 18px; }
+.id-chips .chip { font-size: 20px; padding: 5px 14px; }
+.holo-strip { position: absolute; left: 0; right: 0; bottom: 0; height: 26px; background: var(--holo); border-top: 3px solid var(--ink); }
+
+#s4b { background: #0B0913; }
+#s4b .video { left: 80px; top: 80px; width: 1180px; height: 920px; border-radius: 32px; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 110%, #3b2f6b 0%, #1b1530 55%, #0f0c1a 100%); border: 2px solid #2a2440; }
+.silhouette { position: absolute; left: 50%; bottom: -30px; width: 560px; height: 680px; margin-left: -280px; }
+.silhouette .head { position: absolute; left: 50%; top: 40px; width: 250px; height: 300px; margin-left: -125px; border-radius: 50% 50% 46% 46%; background: #5a4a8f; }
+.silhouette .body { position: absolute; left: 0; right: 0; bottom: 0; height: 360px; border-radius: 280px 280px 0 0; background: #4a3c7a; }
+.glass { background: rgba(18,15,28,.55); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.15); border-radius: 999px; }
+#s4b .idchip { left: 110px; top: 110px; padding: 14px 28px; font-size: 30px; font-weight: 700; }
+#s4b .shield { left: 1150px; top: 110px; width: 76px; height: 76px; display: grid; place-items: center; }
+#s4b .self { left: 960px; top: 640px; width: 260px; height: 330px; border-radius: 24px; border: 2px solid rgba(255,255,255,.3);
+  background: radial-gradient(ellipse at 50% 100%, #2c5a6b, #13232b); overflow: hidden; }
+#s4b .bar { left: 300px; top: 900px; height: 84px; padding: 0 16px; display: flex; align-items: center; gap: 14px; }
+#s4b .bar .b { font-weight: 700; font-size: 26px; padding: 12px 24px; border-radius: 14px; border: 2px solid var(--ink); }
+#s4b .panel { left: 1310px; top: 80px; width: 530px; height: 920px; border-radius: 32px; background: var(--surface-d); border: 2px solid var(--hairline-d); padding: 34px; }
+#s4b .panel .t { font-family: var(--mono); font-size: 20px; color: var(--muted-d); letter-spacing: .08em; margin-bottom: 26px; }
+.bubble { position: absolute; max-width: 380px; font-size: 30px; padding: 16px 24px; border-radius: 24px; font-weight: 500; line-height: 1.3; }
+.bubble.them { left: 34px; background: #2B2640; color: var(--chalk); border-bottom-left-radius: 6px; }
+.bubble.me { right: 34px; background: var(--grape-strong); color: #fff; border-bottom-right-radius: 6px; }
+.icebreaker { position: absolute; left: 34px; right: 34px; bottom: 34px; padding: 22px; border-radius: 18px; border: 2px dashed var(--grape-text-d); color: var(--grape-text-d); font-size: 26px; font-weight: 600; }
+
+/* Scene 5: plain safety */
+#s5 { background: var(--night); }
+#s5 .hl { left: 180px; top: 170px; font-size: 104px; }
+#s5 ul { position: absolute; left: 180px; top: 380px; list-style: none; padding: 0; display: flex; flex-direction: column; gap: 34px; }
+#s5 li { display: flex; align-items: center; gap: 30px; font-size: 48px; font-weight: 600; }
+#s5 li svg { width: 60px; height: 60px; flex: none; }
+#s5 .foot { left: 180px; top: 930px; font-size: 30px; color: var(--muted-d); }
+
+/* Scene 6 */
+#s6 { background: var(--chalk); color: var(--ink); }
+#s6 .hl { left: 0; right: 0; top: 150px; text-align: center; font-size: 110px; }
+#s6 .bot { left: 50%; top: 380px; width: 1040px; margin-left: -520px; padding: 40px 46px; display: flex; gap: 36px; align-items: center; }
+#s6 .bot .name { white-space: nowrap; font-family: var(--display); font-size: 58px; font-weight: 800; }
+#s6 .bot .tagb { margin-top: 10px; display: inline-block; font-family: var(--mono); font-size: 22px; padding: 6px 14px; border-radius: 10px; border: 2px solid var(--ink); background: var(--sky); letter-spacing: .08em; }
+#s6 .bb { left: 50%; top: 710px; margin-left: -520px; max-width: 1040px; font-size: 40px; padding: 26px 34px; border-radius: 28px; border-bottom-left-radius: 8px;
+  background: #fff; border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); font-weight: 600; }
+
+/* Scene 7: bento */
+#s7 { background: var(--night); }
+#s7 .hl { left: 120px; top: 90px; font-size: 92px; }
+#s7 .grid { position: absolute; left: 120px; top: 240px; width: 1680px; height: 760px; display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 30px; }
+.tile { position: relative; border: 3px solid var(--line-d); border-radius: 28px; box-shadow: 8px 8px 0 var(--line-d); color: var(--ink); padding: 36px; }
+.tile .tt { font-family: var(--display); font-weight: 800; font-size: 64px; letter-spacing: -0.02em; }
+.tile .td { font-size: 30px; font-weight: 600; margin-top: 10px; max-width: 460px; }
+.tile .emo { position: absolute; right: 30px; bottom: 20px; font-size: 90px; }
+.tile .soon { position: absolute; right: -14px; top: -22px; }
+.tile .soon span { font-size: 24px; padding: 6px 16px; }
+.tile.big { grid-row: span 2; background: var(--grape-strong); color: #fff; }
+.live { display: inline-flex; align-items: center; gap: 12px; margin-top: 30px; font-size: 30px; font-weight: 700; padding: 10px 22px; border-radius: 999px; background: #fff; color: var(--ink); border: 3px solid var(--ink); }
+.live i { width: 16px; height: 16px; border-radius: 999px; background: #127A4A; display: inline-block; }
+
+/* Scene 8: finale */
+#s8 { background: var(--night); }
+#s8 .flash { position: absolute; inset: 0; background: #fff; }
+#s8 .cards { position: absolute; left: 0; right: 0; top: 60px; height: 420px; }
+#s8 .mini { position: absolute; width: 520px; height: 300px; left: 50%; top: 60px; }
+#s8 .mini .id-body { padding: 26px 26px 0; gap: 22px; }
+#s8 .mini .avatar { width: 110px; height: 110px; font-size: 54px; }
+#s8 .mini .id-name { font-size: 44px; }
+#s8 .mini .id-uni { font-size: 22px; }
+#s8 .mini .id-top { height: 50px; }
+#s8 .mini .id-top .mono { font-size: 16px; }
+#s8 .big { left: 0; right: 0; top: 540px; text-align: center; font-size: 132px; }
+#s8 .cta { left: 50%; top: 840px; }
+#s8 .fine { left: 0; right: 0; top: 990px; text-align: center; font-size: 30px; color: var(--muted-d); }
+#s8 .end { position: absolute; inset: 0; background: var(--night); display: grid; place-items: center; }
+
+/* Controls (hidden while rendering) */
+#controls { position: fixed; left: 16px; right: 16px; bottom: 16px; display: flex; gap: 12px; align-items: center; z-index: 100;
+  font: 600 14px var(--body); color: #fff; }
+#controls button { font: 700 15px var(--body); padding: 10px 18px; border-radius: 12px; border: 2px solid #16131F; background: #D4FF3A; color: #16131F; box-shadow: 3px 3px 0 #16131F; cursor: pointer; }
+#controls input { flex: 1; accent-color: #7B5CFF; }
+#controls span { font-family: var(--mono); min-width: 64px; text-align: right; }
+body.rendering #controls { display: none; }
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="stage">
+
+  <!-- 1: somewhere right now -->
+  <section class="scene" id="s1">
+    <div class="abs l1">somewhere right now,</div>
+    <div class="abs city display"></div>
+  </section>
+
+  <!-- 2: title -->
+  <section class="scene" id="s2">
+    <div class="abs line display">a student is looking for<br>someone to talk to.</div>
+    <div class="abs logo"><div class="logo-box">quad</div></div>
+    <svg class="abs pip" id="pip2" viewBox="0 0 100 100"></svg>
+    <div class="abs tag display">meet students from everywhere.</div>
+  </section>
+
+  <!-- 3: verified -->
+  <section class="scene" id="s3">
+    <div class="abs hl display">students only.<br>for real.</div>
+    <div class="abs sub">
+      <div><span class="n">1</span>your college email</div>
+      <div><span class="n">2</span>a 6-digit code</div>
+      <div><span class="n">3</span>18+, always</div>
+    </div>
+    <div class="abs form card">
+      <div class="label">COLLEGE EMAIL</div>
+      <div class="input"><span id="email"></span><span class="caret"></span></div>
+      <div class="uni" id="uni">Oh hey, University of Nairobi 🇰🇪</div>
+      <div class="label" style="margin-top:40px">CODE SENT TO YOUR INBOX</div>
+      <div class="otp" id="otp"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+    <div class="abs verified"><span class="holo-sticker">✓ Verified · University of Nairobi</span></div>
+  </section>
+
+  <!-- 4a: matching -->
+  <section class="scene" id="s4a">
+    <div class="abs find display">Finding someone cool…</div>
+    <div class="abs slot"><div class="reel" id="reel"></div></div>
+    <div class="abs idcard card" id="idcard">
+      <div class="id-top"><span class="mono">QUAD · STUDENT ID</span><span class="mono">JUST CHAT</span></div>
+      <div class="id-body">
+        <div class="avatar" style="background:var(--sky)">L</div>
+        <div>
+          <div class="id-name">Lena</div>
+          <div class="id-uni">TU Munich 🇩🇪</div>
+          <div class="id-course">Computer Science · Year 2</div>
+          <div class="id-chips"><span class="chip" style="background:var(--zest)">climbing</span><span class="chip" style="background:var(--gum)">anime</span><span class="chip" style="background:var(--tang)">synths</span></div>
+        </div>
+      </div>
+      <div class="holo-strip"></div>
+    </div>
+  </section>
+
+  <!-- 4b: call screen -->
+  <section class="scene" id="s4b">
+    <div class="abs video"><div class="silhouette"><div class="body"></div><div class="head"></div></div></div>
+    <div class="abs self"><div class="silhouette" style="transform:scale(.42);transform-origin:50% 100%;bottom:0"><div class="body" style="background:#3f7d8f"></div><div class="head" style="background:#4d93a6"></div></div></div>
+    <div class="abs idchip glass">Lena · TU Munich 🇩🇪</div>
+    <div class="abs shield glass" title="Report">
+      <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/></svg>
+    </div>
+    <div class="abs bar glass">
+      <span class="b" style="background:#2B2640;color:#fff;border-color:#4a4466">💬 Chat</span>
+      <span class="b" style="background:#2B2640;color:#fff;border-color:#4a4466">🎤 Mic</span>
+      <span class="b" style="background:#2B2640;color:#fff;border-color:#4a4466">📷 Cam</span>
+      <span class="b" style="background:var(--zest);color:var(--ink)">Connect ✦</span>
+      <span class="b" style="background:#fff;color:var(--ink)">Next →</span>
+    </div>
+    <div class="abs panel">
+      <div class="t">CHAT</div>
+      <div class="bubble me" id="b1" style="top:110px">hiii where are you studying?</div>
+      <div class="bubble them" id="b2" style="top:220px">TU Munich! you?</div>
+      <div class="bubble me" id="b3" style="top:330px">Nairobi 🇰🇪 it's 9pm here</div>
+      <div class="bubble them" id="b4" style="top:440px">no way, same time zone-ish 😄</div>
+      <div class="icebreaker" id="ice">💡 Ask them: best food near campus?</div>
+    </div>
+  </section>
+
+  <!-- 5: safety, plain style -->
+  <section class="scene" id="s5">
+    <div class="abs hl display">Safe by default.</div>
+    <ul>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/></svg>Report is one tap, and their video blurs instantly.</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="#4ADE9A" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>Your IP address stays hidden.</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="#4ADE9A" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Links unlock after 5 minutes.</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="#4ADE9A" stroke-width="2" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg>Every account is a verified student, 18+.</li>
+    </ul>
+    <div class="abs foot">Our team reviews every report.</div>
+  </section>
+
+  <!-- 6: Quad Bot -->
+  <section class="scene" id="s6">
+    <div class="abs hl display">nobody around yet?</div>
+    <div class="abs bot card">
+      <svg class="pip" id="pip6" viewBox="0 0 100 100"></svg>
+      <div>
+        <div class="name">Practice with Quad Bot</div>
+        <div class="tagb">BOT · PRACTICE PARTNER</div>
+      </div>
+    </div>
+    <div class="abs bb" id="bb">hey! I'm Quad Bot, and yes, I'm a bot 🤖 want a warm-up chat while we wait?</div>
+  </section>
+
+  <!-- 7: bento / coming soon -->
+  <section class="scene" id="s7">
+    <div class="abs hl display">and this is just the start.</div>
+    <div class="grid">
+      <div class="tile big" id="t0"><div class="tt">Just Chat</div><div class="td">Random 1:1 video + text with verified students.</div><div class="live"><i></i>live now</div><div class="emo">💬</div></div>
+      <div class="tile" id="t1" style="background:var(--zest)"><div class="tt">Quick Play</div><div class="td">Games mid-call.</div><div class="soon"><span class="sticker">coming soon</span></div><div class="emo">🎲</div></div>
+      <div class="tile" id="t2" style="background:var(--tang)"><div class="tt">Tables</div><div class="td">Ludo, cards, crews.</div><div class="soon"><span class="sticker">coming soon</span></div><div class="emo">🃏</div></div>
+      <div class="tile" id="t3" style="background:var(--gum)"><div class="tt">Cinema</div><div class="td">Watch parties.</div><div class="soon"><span class="sticker">coming soon</span></div><div class="emo">🎬</div></div>
+      <div class="tile" id="t4" style="background:var(--sky)"><div class="tt">Global Hour</div><div class="td">Everyone, same time.</div><div class="soon"><span class="sticker">coming soon</span></div><div class="emo">🌍</div></div>
+    </div>
+  </section>
+
+  <!-- 8: finale -->
+  <section class="scene" id="s8">
+    <div class="cards">
+      <div class="mini card" id="m0" style="padding:0;overflow:hidden">
+        <div class="id-top" style="background:var(--tang);color:var(--ink)"><span class="mono">QUAD · STUDENT ID</span></div>
+        <div class="id-body"><div class="avatar" style="background:var(--zest)">A</div><div><div class="id-name">Aisha</div><div class="id-uni">U of Nairobi 🇰🇪</div></div></div>
+        <div class="holo-strip"></div>
+      </div>
+      <div class="mini card" id="m1" style="padding:0;overflow:hidden">
+        <div class="id-top"><span class="mono">QUAD · STUDENT ID</span></div>
+        <div class="id-body"><div class="avatar" style="background:var(--gum)">M</div><div><div class="id-name">Mateo</div><div class="id-uni">USP São Paulo 🇧🇷</div></div></div>
+        <div class="holo-strip"></div>
+      </div>
+      <div class="mini card" id="m2" style="padding:0;overflow:hidden">
+        <div class="id-top" style="background:var(--sky);color:var(--ink)"><span class="mono">QUAD · STUDENT ID</span></div>
+        <div class="id-body"><div class="avatar" style="background:var(--tang)">J</div><div><div class="id-name">Ji-woo</div><div class="id-uni">Yonsei, Seoul 🇰🇷</div></div></div>
+        <div class="holo-strip"></div>
+      </div>
+    </div>
+    <div class="abs big display">meet students<br>from everywhere.</div>
+    <div class="abs cta"><span class="btn">Get in with your college email →</span></div>
+    <div class="abs fine">verified university students · 18+ · worldwide</div>
+    <div class="end" id="end"><div class="logo-box" style="font-size:200px">quad</div></div>
+    <div class="flash" id="flash"></div>
+  </section>
+
+  <div class="grain"></div>
+</div>
+</div>
+
+<div id="controls">
+  <button id="play" type="button">▶ Play</button>
+  <input id="scrub" type="range" min="0" max="46" step="0.01" value="0">
+  <span id="clock">0.00</span>
+</div>
+
+<script>
+const DURATION = 46;
+const BPM = 120, BEAT = 60 / BPM;
+
+// ---------- helpers ----------
+const $ = (s) => document.querySelector(s);
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const outCubic = (x) => 1 - (1 - x) ** 3;
+const outBack = (x) => { const c = 1.9; return 1 + (c + 1) * (x - 1) ** 3 + c * (x - 1) ** 2; };
+const lerp = (a, b, x) => a + (b - a) * x;
+function set(el, { x = 0, y = 0, s = 1, r = 0, o = 1, extra = "" } = {}) {
+  el.style.transform = `translate(${x}px, ${y}px) scale(${s}) rotate(${r}deg) ${extra}`;
+  el.style.opacity = o;
+}
+// pop-in: scale from 0 with overshoot, starting at time a
+const pop = (t, a, d = 0.45) => outBack(prog(t, a, a + d));
+// a quick kick on each beat, for pulsing things to the music
+const pulse = (t) => Math.exp(-((t % BEAT) / BEAT) * 6);
+
+function pipSVG(mood) {
+  const eyes = mood === "happy"
+    ? `<path d="M34 46 q6 -7 12 0 M56 46 q6 -7 12 0" stroke="#16131F" stroke-width="4.5" fill="none" stroke-linecap="round"/>`
+    : `<circle cx="40" cy="46" r="7" fill="#16131F"/><circle cx="62" cy="46" r="7" fill="#16131F"/><circle cx="42.5" cy="43.5" r="2.4" fill="#fff"/><circle cx="64.5" cy="43.5" r="2.4" fill="#fff"/>`;
+  return `<path d="M50 8 C78 8 92 30 92 58 C92 82 74 94 50 94 C26 94 8 82 8 58 C8 30 22 8 50 8Z" fill="#D4FF3A" stroke="#fff" stroke-width="10"/>
+    <path d="M50 8 C78 8 92 30 92 58 C92 82 74 94 50 94 C26 94 8 82 8 58 C8 30 22 8 50 8Z" fill="#D4FF3A" stroke="#16131F" stroke-width="3.5"/>
+    ${eyes}<path d="M43 62 q8 8 16 0" stroke="#16131F" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="30" cy="60" rx="6" ry="3.5" fill="#FF5FA2" opacity=".6"/><ellipse cx="72" cy="60" rx="6" ry="3.5" fill="#FF5FA2" opacity=".6"/>`;
+}
+$("#pip2").innerHTML = pipSVG("happy");
+$("#pip6").innerHTML = pipSVG("look");
+
+// ---------- scenes ----------
+const CITIES = [["Nairobi", "🇰🇪"], ["Toronto", "🇨🇦"], ["Seoul", "🇰🇷"], ["São Paulo", "🇧🇷"], ["Munich", "🇩🇪"], ["Mumbai", "🇮🇳"], ["Lagos", "🇳🇬"], ["Melbourne", "🇦🇺"]];
+const MODE_COLORS = ["#D4FF3A", "#FF9142", "#FF5FA2", "#4FC3FF", "#A48BFF"];
+
+const REEL = [["🇯🇵", "Kyoto University"], ["🇲🇽", "UNAM"], ["🇮🇳", "IIT Bombay"], ["🇬🇧", "University of Leeds"], ["🇧🇷", "USP"], ["🇨🇦", "McGill"],
+  ["🇳🇬", "University of Lagos"], ["🇰🇷", "Yonsei"], ["🇪🇸", "Universidad de Granada"], ["🇦🇺", "Monash"], ["🇹🇷", "Boğaziçi"], ["🇩🇪", "TU Munich"]];
+$("#reel").innerHTML = REEL.map(([f, n]) => `<div><span>${f}</span><span>${n}</span></div>`).join("");
+
+const SCENES = [
+  ["s1", 0, 4, (t, el) => {
+    const i = Math.floor(t / BEAT) % CITIES.length;
+    const [name, flag] = CITIES[i];
+    const city = el.querySelector(".city");
+    city.textContent = `${name} ${flag}`;
+    const lt = (t % BEAT) / BEAT;
+    city.style.color = MODE_COLORS[i % MODE_COLORS.length];
+    set(city, { s: lerp(1.25, 1, outCubic(clamp(lt * 3))), r: (i % 2 ? 1.5 : -1.5), o: clamp(lt * 6) });
+    set(el.querySelector(".l1"), { y: lerp(30, 0, outCubic(prog(t, 0, 0.6))), o: prog(t, 0, 0.5) });
+    el.style.opacity = 1 - prog(t, 3.8, 4);
+  }],
+  ["s2", 4, 9, (t, el) => {
+    const line = el.querySelector(".line");
+    set(line, { y: lerp(40, 0, outCubic(prog(t, 4, 4.6))), o: prog(t, 4, 4.4) * (1 - prog(t, 6.6, 6.9)) });
+    const logo = el.querySelector(".logo");
+    const ls = pop(t, 7, 0.5);
+    set(logo, { x: -330, y: -250, s: ls * (1 + 0.03 * pulse(t) * prog(t, 7.5, 8)), r: lerp(-14, -3, ls), o: t >= 7 ? 1 : 0 });
+    logo.style.transformOrigin = "330px 250px";
+    const pip = $("#pip2");
+    const ps = pop(t, 7.5, 0.5);
+    set(pip, { x: 1420, y: 240 + 10 * Math.sin(t * 6), s: ps, r: 12, o: t >= 7.5 ? 1 : 0 });
+    set(el.querySelector(".tag"), { y: lerp(40, 0, outCubic(prog(t, 7.8, 8.3))), o: prog(t, 7.8, 8.2) });
+    el.style.opacity = 1 - prog(t, 8.85, 9);
+  }],
+  ["s3", 9, 15, (t, el) => {
+    set(el.querySelector(".hl"), { x: lerp(-80, 0, outCubic(prog(t, 9, 9.5))), o: prog(t, 9, 9.3) });
+    el.querySelectorAll(".sub div").forEach((d, i) => {
+      set(d, { x: lerp(-60, 0, outCubic(prog(t, 9.6 + i * 0.5, 10 + i * 0.5))), o: prog(t, 9.6 + i * 0.5, 9.9 + i * 0.5) });
+    });
+    const form = el.querySelector(".form");
+    set(form, { y: lerp(120, 0, outBack(prog(t, 9.2, 9.8))), r: lerp(4, 1.2, prog(t, 9.2, 9.8)), o: prog(t, 9.2, 9.4) });
+    const email = "aisha@uonbi.ac.ke";
+    $("#email").textContent = email.slice(0, Math.floor(prog(t, 9.9, 11.3) * email.length));
+    el.querySelector(".caret").style.opacity = (t < 11.4 && Math.floor(t * 4) % 2 === 0) || t < 11.3 ? 1 : 0;
+    set($("#uni"), { y: lerp(20, 0, outBack(prog(t, 11.5, 11.9))), o: prog(t, 11.5, 11.7) });
+    const code = "481902";
+    [...$("#otp").children].forEach((d, i) => {
+      const a = 12.0 + i * 0.25;
+      d.textContent = t >= a ? code[i] : "";
+      const k = pop(t, a, 0.3);
+      d.style.transform = `scale(${t >= a ? 0.8 + 0.2 * k : 1})`;
+      d.style.background = t >= a ? "#D4FF3A" : "#fff";
+    });
+    const v = el.querySelector(".verified");
+    set(v, { s: pop(t, 13.6, 0.5), r: -4, o: t >= 13.6 ? 1 : 0 });
+    el.style.opacity = 1 - prog(t, 14.85, 15);
+  }],
+  ["s4a", 15, 19, (t, el) => {
+    set(el.querySelector(".find"), { y: lerp(-30, 0, outCubic(prog(t, 15, 15.4))), o: prog(t, 15, 15.3) });
+    // slot machine: spin fast, decelerate, land on the last item at 17.0
+    const itemH = 200, last = REEL.length - 1;
+    const p = outCubic(prog(t, 15.1, 17.0));
+    const pos = p * (last + REEL.length * 2);
+    const y = -((pos % REEL.length) * itemH);
+    const reel = $("#reel");
+    reel.style.transform = `translateY(${p >= 1 ? -last * itemH : y}px)`;
+    reel.style.filter = `blur(${(1 - p) * 6}px)`;
+    const slot = el.querySelector(".slot");
+    slot.style.borderColor = t > 17 ? "#D4FF3A" : "#fff";
+    const c = outBack(prog(t, 17.1, 17.7));
+    set($("#idcard"), { y: lerp(600, 0, c), r: lerp(8, -1.5, c) });
+    el.style.opacity = 1 - prog(t, 18.85, 19);
+  }],
+  ["s4b", 19, 23, (t, el) => {
+    el.style.opacity = prog(t, 19, 19.25) * (1 - prog(t, 22.8, 23));
+    ["#b1", "#b2", "#b3", "#b4"].forEach((id, i) => {
+      const a = 19.5 + i * 0.7;
+      set($(id), { y: lerp(30, 0, outBack(prog(t, a, a + 0.35))), s: lerp(0.8, 1, outBack(prog(t, a, a + 0.35))), o: prog(t, a, a + 0.15) });
+    });
+    set($("#ice"), { y: lerp(20, 0, outCubic(prog(t, 22.2, 22.5))), o: prog(t, 22.2, 22.4) });
+    set(el.querySelector(".video"), { s: lerp(1.04, 1, outCubic(prog(t, 19, 20))) });
+  }],
+  ["s5", 23, 29, (t, el) => {
+    // plain style: fades only, no tilt, no bounce
+    el.style.opacity = prog(t, 23, 23.4) * (1 - prog(t, 28.7, 29));
+    set(el.querySelector(".hl"), { o: prog(t, 23.3, 23.9) });
+    el.querySelectorAll("li").forEach((li, i) => {
+      set(li, { y: lerp(16, 0, outCubic(prog(t, 24 + i * 0.9, 24.6 + i * 0.9))), o: prog(t, 24 + i * 0.9, 24.6 + i * 0.9) });
+    });
+    set(el.querySelector(".foot"), { o: prog(t, 27.6, 28.1) });
+  }],
+  ["s6", 29, 33, (t, el) => {
+    set(el.querySelector(".hl"), { y: lerp(30, 0, outCubic(prog(t, 29, 29.4))), o: prog(t, 29, 29.3) });
+    const b = el.querySelector(".bot");
+    set(b, { y: lerp(200, 0, outBack(prog(t, 29.5, 30.1))), r: lerp(-6, -1, prog(t, 29.5, 30.1)), o: prog(t, 29.5, 29.7) });
+    $("#pip6").style.transform = `translateY(${-6 * Math.abs(Math.sin(t * Math.PI * 2))}px) rotate(${4 * Math.sin(t * 3)}deg)`;
+    set($("#bb"), { y: lerp(40, 0, outBack(prog(t, 30.6, 31))), s: lerp(0.85, 1, outBack(prog(t, 30.6, 31))), o: prog(t, 30.6, 30.8) });
+    el.style.opacity = 1 - prog(t, 32.85, 33);
+  }],
+  ["s7", 33, 39, (t, el) => {
+    set(el.querySelector(".hl"), { y: lerp(30, 0, outCubic(prog(t, 33, 33.4))), o: prog(t, 33, 33.3) });
+    [0, 1, 2, 3, 4].forEach((i) => {
+      const a = 33.5 + i * 1.0; // one tile every 2 beats
+      const k = pop(t, a, 0.45);
+      const tilt = [-1.5, 2, -2.5, 1.5, -1][i];
+      set($("#t" + i), { y: lerp(260, 0, k), r: lerp(tilt * 5, tilt, k), s: 1 + 0.02 * pulse(t) * prog(t, 37.5, 39), o: t >= a ? 1 : 0 });
+    });
+    // shake on the last beat of the build
+    const shake = prog(t, 38, 39) * 6;
+    el.style.transform = `translate(${Math.sin(t * 90) * shake}px, ${Math.cos(t * 77) * shake}px)`;
+  }],
+  ["s8", 39, 46, (t, el) => {
+    $("#flash").style.opacity = 1 - prog(t, 39, 39.35);
+    const pos = [[-720, 60, -8], [-260, 10, 3], [200, 70, -4]];
+    [0, 1, 2].forEach((i) => {
+      const a = 39.1 + i * 0.25;
+      const k = outBack(prog(t, a, a + 0.5));
+      const [x, y, r] = pos[i];
+      set($("#m" + i), { x: x, y: lerp(y - 700, y, k), r: lerp(r * 4, r, k) + Math.sin(t * 2 + i) * 0.6, o: t >= a ? 1 : 0 });
+    });
+    const big = el.querySelector(".big");
+    set(big, { s: lerp(1.4, 1, outCubic(prog(t, 39.8, 40.3))) * (1 + 0.015 * pulse(t) * (1 - prog(t, 44, 45))), o: prog(t, 39.8, 40) });
+    const cta = el.querySelector(".cta");
+    set(cta, { x: -420, s: pop(t, 41, 0.5), r: -1, o: t >= 41 ? 1 : 0 });
+    cta.style.transformOrigin = "420px 50px";
+    set(el.querySelector(".fine"), { o: prog(t, 41.8, 42.3) });
+    // end card on the final hit at 44
+    const end = $("#end");
+    end.style.opacity = t >= 44 ? 1 : 0;
+    const lb = end.firstElementChild;
+    lb.style.transform = `scale(${pop(t, 44, 0.5)}) rotate(-3deg)`;
+    el.style.opacity = 1 - prog(t, 45.3, 46);
+  }],
+];
+
+function seek(t) {
+  for (const [id, a, b, fn] of SCENES) {
+    const el = document.getElementById(id);
+    const on = t >= a && t < b;
+    el.style.display = on ? "block" : "none";
+    if (on) fn(t, el);
+  }
+}
+
+// ---------- music (Web Audio, 120 BPM, A minor: Am F C G) ----------
+function rng(seed) { return () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }; }
+function noiseBuffer(ctx, secs = 1) {
+  const r = rng(7), b = ctx.createBuffer(1, ctx.sampleRate * secs, ctx.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = r() * 2 - 1;
+  return b;
+}
+const midi = (n) => 440 * 2 ** ((n - 69) / 12);
+// chords per bar (root midi + triad)
+const PROG = [[57, [57, 60, 64]], [53, [53, 57, 60]], [48, [48, 52, 55]], [55, [55, 59, 62]]];
+
+function buildMusic(ctx, out) {
+  const noise = noiseBuffer(ctx, 2);
+  const master = ctx.createGain(); master.gain.value = 0.6;
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
+  master.connect(comp).connect(out);
+  // global lowpass used for the filtered intro and the quiet safety section
+  const tone = ctx.createBiquadFilter(); tone.type = "lowpass"; tone.frequency.value = 18000; tone.connect(master);
+  tone.frequency.setValueAtTime(900, 0); tone.frequency.exponentialRampToValueAtTime(18000, 4);
+  tone.frequency.setValueAtTime(18000, 23); tone.frequency.exponentialRampToValueAtTime(1800, 23.6);
+  tone.frequency.setValueAtTime(1800, 29); tone.frequency.exponentialRampToValueAtTime(18000, 29.5);
+
+  const kick = (t, v = 1) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.setValueAtTime(160, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.14);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    o.connect(g).connect(tone); o.start(t); o.stop(t + 0.42);
+  };
+  const noiseHit = (t, { dur = 0.05, v = 0.3, type = "highpass", f = 8000, q = 0.7 } = {}) => {
+    const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = noise; fl.type = type; fl.frequency.value = f; fl.Q.value = q;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    s.connect(fl).connect(g).connect(tone); s.start(t, (t * 0.37) % 1); s.stop(t + dur + 0.02);
+  };
+  const hat = (t, v = 0.12) => noiseHit(t, { dur: 0.04, v });
+  const openHat = (t) => noiseHit(t, { dur: 0.18, v: 0.08 });
+  const clap = (t, v = 0.45) => { noiseHit(t, { dur: 0.16, v, type: "bandpass", f: 1500, q: 0.9 }); noiseHit(t + 0.012, { dur: 0.12, v: v * 0.6, type: "bandpass", f: 1100, q: 1 }); };
+  const synth = (t, freq, dur, { type = "sawtooth", v = 0.08, cutoff = 2400, attack = 0.005, detune = 8, dest = tone } = {}) => {
+    const fl = ctx.createBiquadFilter(), g = ctx.createGain();
+    fl.type = "lowpass"; fl.frequency.setValueAtTime(cutoff, t); fl.frequency.exponentialRampToValueAtTime(Math.max(200, cutoff * 0.25), t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + attack); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    fl.connect(g).connect(dest);
+    for (const d of detune ? [-detune, detune] : [0]) {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq; o.detune.value = d;
+      o.connect(fl); o.start(t); o.stop(t + dur + 0.05);
+    }
+  };
+  const bass = (t, n, dur = 0.22, v = 0.22) => synth(t, midi(n - 12), dur, { type: "square", v, cutoff: 700, detune: 0 });
+  const stab = (t, notes, v = 0.06) => notes.forEach((n) => {
+      synth(t, midi(n + 12), 0.28, { v, cutoff: 3200 });
+    });
+  const pad = (t, notes, dur) => notes.forEach((n) => {
+      synth(t, midi(n), dur, { type: "triangle", v: 0.07, cutoff: 1800, attack: 0.6, detune: 6 });
+    });
+  const impact = (t) => { kick(t, 1.2); noiseHit(t, { dur: 1.6, v: 0.35, type: "highpass", f: 3000 });
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(30, t + 1.2);
+    g.gain.setValueAtTime(0.6, t); g.gain.exponentialRampToValueAtTime(0.001, t + 1.4); o.connect(g).connect(master); o.start(t); o.stop(t + 1.5); };
+  const riser = (a, b) => {
+    const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = noise; s.loop = true; fl.type = "bandpass"; fl.Q.value = 2;
+    fl.frequency.setValueAtTime(300, a); fl.frequency.exponentialRampToValueAtTime(9000, b);
+    g.gain.setValueAtTime(0.001, a); g.gain.exponentialRampToValueAtTime(0.25, b);
+    s.connect(fl).connect(g).connect(tone); s.start(a); s.stop(b);
+  };
+  const arp = (t, notes, v = 0.05) => { for (let i = 0; i < 8; i++) synth(t + i * BEAT / 2, midi(notes[[0, 1, 2, 1, 2, 0, 2, 1][i]] + 24), 0.16, { type: "square", v, cutoff: 5000, detune: 0 }); };
+  const LEAD = [76, 74, 72, 74, 76, 79, 76, 74, 72, 72, 69, 72, 74, 72, 71, 67]; // 16th-ish hook, 2 per beat
+
+  for (let bar = 0; bar < 23; bar++) {
+    const t0 = bar * 2;
+    const [root, chord] = PROG[bar % 4];
+    for (let b = 0; b < 4; b++) {
+      const t = t0 + b * BEAT;
+      const e = t + BEAT / 2;
+      if (t < 4) { // intro
+        if (b % 2 === 0) stab(t, chord, 0.07);
+        hat(e, 0.08);
+        if (t >= 2) kick(t, 0.9);
+      } else if (t < 23 || (t >= 39 && t < 44)) { // groove & drop
+        const drop = t >= 39;
+        kick(t);
+        if (b % 2 === 1) clap(t);
+        hat(e); hat(t + BEAT * 0.25, 0.05); if (b === 3) openHat(e);
+        bass(t, root); bass(e, root + (b === 3 ? 7 : 12), 0.18, 0.16);
+        if (b === 0 || b === 2) stab(e, chord, drop ? 0.07 : 0.05);
+        if (t >= 15 && t < 23 && b % 2 === 0) arp(t, chord, 0.035);
+        if (drop) { const i = ((bar % 2) * 8 + b * 2); synth(t, midi(LEAD[i]), 0.24, { v: 0.06, cutoff: 6000 }); synth(e, midi(LEAD[i + 1]), 0.24, { v: 0.06, cutoff: 6000 }); }
+      } else if (t < 29) { // safety: calm pad + soft pulse
+        if (b === 0) { pad(t, chord.map((n) => n + 12), 2.3); kick(t, 0.35); }
+        if (b === 0) bass(t, root, 1.8, 0.1);
+      } else if (t < 33) { // Quad Bot: light groove
+        hat(e, 0.1); if (b % 2 === 0) kick(t, 0.8);
+        bass(t, root, 0.2, 0.18); if (b % 2 === 1) synth(t, midi(chord[2] + 24), 0.14, { type: "square", v: 0.04, cutoff: 5000, detune: 0 });
+      } else if (t < 39) { // build
+        kick(t, 0.9);
+        const k = (t - 33) / 6;
+        const div = t < 36 ? 1 : t < 38 ? 2 : 4; // snare roll speeds up
+        for (let i = 0; i < div; i++) clap(t + i * BEAT / div, 0.18 + 0.3 * k);
+        stab(t, chord, 0.05);
+        bass(t, root, 0.2, 0.16);
+      } else if (t >= 44) { // final hit + tail
+        if (t === 44) { impact(44); pad(44, [57, 64, 69, 72, 76], 2); }
+      }
+    }
+  }
+  impact(7);
+  riser(33, 39);
+  impact(39);
+}
+
+function encodeWav(buf) {
+  const ch = buf.numberOfChannels, len = buf.length, sr = buf.sampleRate;
+  const data = new DataView(new ArrayBuffer(44 + len * ch * 2));
+  const str = (o, s) => [...s].forEach((c, i) => {
+      data.setUint8(o + i, c.charCodeAt(0));
+    });
+  str(0, "RIFF"); data.setUint32(4, 36 + len * ch * 2, true); str(8, "WAVE"); str(12, "fmt ");
+  data.setUint32(16, 16, true); data.setUint16(20, 1, true); data.setUint16(22, ch, true); data.setUint32(24, sr, true);
+  data.setUint32(28, sr * ch * 2, true); data.setUint16(32, ch * 2, true); data.setUint16(34, 16, true); str(36, "data"); data.setUint32(40, len * ch * 2, true);
+  const chans = [...Array(ch)].map((_, i) => buf.getChannelData(i));
+  let o = 44;
+  for (let i = 0; i < len; i++) for (let c = 0; c < ch; c++) { data.setInt16(o, clamp(chans[c][i], -1, 1) * 0x7fff, true); o += 2; }
+  return new Uint8Array(data.buffer);
+}
+
+// used by render.mjs
+window.__seek = seek;
+window.__renderAudio = async () => {
+  const ctx = new OfflineAudioContext(2, 48000 * DURATION, 48000);
+  buildMusic(ctx, ctx.destination);
+  const wav = encodeWav(await ctx.startRendering());
+  let s = ""; for (let i = 0; i < wav.length; i += 0x8000) s += String.fromCharCode(...wav.subarray(i, i + 0x8000));
+  return btoa(s);
+};
+
+// ---------- preview player ----------
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $("#stage").style.transform = `scale(${s}) translate(-50%, -50%)`;
+}
+addEventListener("resize", fit); fit();
+
+let audio = null, startAt = 0, offset = 0, playing = false;
+async function play() {
+  // Rebuild the music so playback can start from the scrubber position
+  const off = new OfflineAudioContext(2, 48000 * DURATION, 48000);
+  buildMusic(off, off.destination);
+  const buf = await off.startRendering();
+  audio = new AudioContext();
+  const src = audio.createBufferSource(); src.buffer = buf; src.connect(audio.destination);
+  if (offset >= DURATION - 0.1) offset = 0;
+  src.start(0, offset); startAt = audio.currentTime - offset; playing = true;
+  $("#play").textContent = "❚❚ Pause";
+  src.onended = () => { if (playing) stop(); };
+  audio._src = src;
+}
+function stop() {
+  if (audio) { offset = audio.currentTime - startAt; audio._src.onended = null; audio.close(); audio = null; }
+  playing = false; $("#play").textContent = "▶ Play";
+}
+function tick() {
+  if (playing && audio) {
+    const t = audio.currentTime - startAt;
+    if (t >= DURATION) { offset = DURATION; stop(); }
+    else { $("#scrub").value = t; $("#clock").textContent = t.toFixed(2); seek(t); }
+  }
+  requestAnimationFrame(tick);
+}
+$("#play").onclick = () => (playing ? stop() : play());
+$("#scrub").oninput = (e) => { if (playing) stop(); offset = +e.target.value; $("#clock").textContent = offset.toFixed(2); seek(offset); };
+addEventListener("keydown", (e) => { if (e.code === "Space") { e.preventDefault(); playing ? stop() : play(); } });
+if (new URLSearchParams(location.search).has("render")) document.body.classList.add("rendering");
+seek(0); tick();
+</script>
+</body>
+</html>
